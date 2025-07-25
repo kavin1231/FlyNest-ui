@@ -1,13 +1,32 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
-import "./App.css";
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
+import HomePage from '../pages/homePage';
+import FlightResults from '../pages/flightresults';
+import PassengerDetails from '../pages/home/passengerDetails';
+import BookingConfirmation from '../pages/home/bookingConfirmation';
+import AdminDashboard from '../pages/admin/adminDashboard';
+import './styles/globals.css';
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Home />} />
-      </Routes>
-    </BrowserRouter>
+    <Router>
+      <div className="min-h-screen bg-slate-900 text-white overflow-x-hidden">
+        <Header />
+        <AnimatePresence mode="wait">
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/flights" element={<FlightResults />} />
+            <Route path="/passengers" element={<PassengerDetails />} />
+            <Route path="/confirmation" element={<BookingConfirmation />} />
+            <Route path="/admin" element={<AdminDashboard />} />
+          </Routes>
+        </AnimatePresence>
+        <Footer />
+      </div>
+    </Router>
   );
 }
 
