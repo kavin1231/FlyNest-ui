@@ -1,27 +1,28 @@
-import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Plane, Menu, X, User, Settings } from 'lucide-react';
+import React, { useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { Plane, Menu, X, User } from "lucide-react";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
   const navItems = [
-    { name: 'Home', path: '/' },
-    { name: 'Flights', path: '/flights' },
-    { name: 'About', path: '/about' },
-    { name: 'Destinations', path: '/destinations' },
-    { name: 'Admin', path: '/admin' },
+    { name: "Home", path: "/" },
+    { name: "Flights", path: "/flights" },
+    { name: "About", path: "/about" },
+    { name: "Destinations", path: "/destinations" },
   ];
 
   return (
     <motion.header
       initial={{ y: -100 }}
       animate={{ y: 0 }}
-      className="fixed top-0 left-0 right-0 z-50 glassmorphism"
+      transition={{ duration: 0.8, delay: 0.1 }}
+      className="fixed top-0 left-0 right-0 z-50 glassmorphism overflow-hidden"
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="flex justify-between items-center h-20">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
@@ -30,8 +31,11 @@ const Header = () => {
               transition={{ duration: 0.5 }}
               className="p-2 gold-gradient rounded-full"
             >
-              <img src="/flynestlogo.png" alt="Logo" className="h-6 w-6 object-contain" />
-
+              <img
+                src="/flynestlogo.png"
+                alt="Logo"
+                className="h-6 w-6 object-contain"
+              />
             </motion.div>
             <span className="text-2xl font-bold text-white">FlyNest</span>
           </Link>
@@ -44,8 +48,8 @@ const Header = () => {
                 to={item.path}
                 className={`relative px-3 py-2 text-sm font-medium transition-colors duration-300 ${
                   location.pathname === item.path
-                    ? 'text-yellow-400'
-                    : 'text-gray-300 hover:text-white'
+                    ? "text-yellow-400"
+                    : "text-gray-300 hover:text-white"
                 }`}
               >
                 {item.name}
@@ -71,6 +75,7 @@ const Header = () => {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              onClick={() => navigate("/login")}
               className="px-6 py-2 gold-gradient text-slate-900 font-semibold rounded-full hover:shadow-lg transition-shadow"
             >
               Sign In
@@ -82,7 +87,11 @@ const Header = () => {
             className="md:hidden p-2 text-white"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
-            {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            {isMenuOpen ? (
+              <X className="h-6 w-6" />
+            ) : (
+              <Menu className="h-6 w-6" />
+            )}
           </button>
         </div>
 
@@ -91,7 +100,7 @@ const Header = () => {
           initial={{ opacity: 0, height: 0 }}
           animate={{
             opacity: isMenuOpen ? 1 : 0,
-            height: isMenuOpen ? 'auto' : 0,
+            height: isMenuOpen ? "auto" : 0,
           }}
           className="md:hidden overflow-hidden"
         >
@@ -107,7 +116,13 @@ const Header = () => {
               </Link>
             ))}
             <div className="pt-4 border-t border-gray-700">
-              <button className="w-full px-6 py-3 gold-gradient text-slate-900 font-semibold rounded-full">
+              <button
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  navigate("/login");
+                }}
+                className="w-full px-6 py-3 gold-gradient text-slate-900 font-semibold rounded-full"
+              >
                 Sign In
               </button>
             </div>

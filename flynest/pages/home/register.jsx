@@ -1,126 +1,171 @@
-import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import axios from "axios";
+import toast from "react-hot-toast";
+import { useNavigate, Link } from "react-router-dom";
 import AOS from "aos";
 import "aos/dist/aos.css";
+import { motion } from "framer-motion";
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
-    name: "",
+    firstname: "",
+    lastname: "",
     email: "",
     password: "",
     confirmPassword: "",
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     AOS.init({ duration: 1000 });
   }, []);
 
-  function handleChange(e) {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  }
-
-  function handleSubmit(e) {
+  const handleOnSubmit = (e) => {
     e.preventDefault();
-    if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match");
+    const BackendUrl = import.meta.env.VITE_BACKEND_URL;
+
+    const { firstname, lastname, email, password, confirmPassword } = formData;
+
+    if (!firstname || !lastname || !email || !password || !confirmPassword) {
+      toast.error("All fields are required");
       return;
     }
-    console.log("Registering", formData);
-    // Add your register logic here
-  }
+
+    if (password !== confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+
+    setIsLoading(true);
+    axios
+      .post(`${BackendUrl}/api/users/`, {
+        firstname,
+        lastname,
+        email,
+        password,
+      })
+      .then(() => {
+        toast.success("Registration Successful");
+        navigate("/login");
+      })
+      .catch((err) => {
+        toast.error(err?.response?.data?.error || "An error occurred");
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center px-4 relative overflow-hidden">
-      {/* Blurred floating gradient circles */}
-      <div className="absolute top-10 left-10 w-72 h-72 bg-yellow-500 opacity-20 rounded-full filter blur-3xl animate-pulse"></div>
-      <div className="absolute bottom-10 right-10 w-72 h-72 bg-yellow-700 opacity-10 rounded-full filter blur-2xl animate-ping"></div>
+    <div
+      className="flex min-h-screen w-full bg-cover bg-center bg-no-repeat items-center justify-center relative"
+      style={{ backgroundImage: `url('/bglg.jpg')` }}
+    >
+      <motion.img
+        src="/planehero.png"
+        alt="Airplane"
+        className="absolute w-[80%] max-w-[80%] left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none opacity-90 z-10"
+        initial={{ x: "100vw", opacity: 0 }}
+        animate={{
+          x: [0, -20, 20, -20, 0],
+          y: [0, -15, 15, -15, 0],
+          rotate: [0, 2, -2, 2, 0],
+          opacity: 1,
+        }}
+        transition={{
+          x: { duration: 0 },
+          opacity: { duration: 1.5 },
+          rotate: {
+            duration: 20,
+            repeat: Infinity,
+            ease: "easeInOut",
+          },
+          y: {
+            duration: 20,
+            repeat: Infinity,
+            ease: "easeInOut",
+          },
+        }}
+      />
 
-      <motion.form
-        onSubmit={handleSubmit}
-        initial={{ opacity: 0, y: 60 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
+      <form
+        onSubmit={handleOnSubmit}
+        className="relative z-10 md:w-96 w-full max-w-sm flex flex-col items-center bg-black/30 backdrop-blur-md border border-white/50 p-8 rounded-2xl shadow-2xl mt-20"
+        style={{
+          boxShadow:
+            "0 0 40px rgba(255, 255, 255, 0.1), 0 0 80px rgba(255, 255, 255, 0.05), inset 0 0 0 1px rgba(255, 255, 255, 0.1)",
+        }}
         data-aos="fade-up"
-        className="w-full max-w-md bg-slate-800 bg-opacity-90 backdrop-blur-sm text-white rounded-2xl p-8 shadow-2xl z-10"
       >
         <h2
-          className="text-4xl font-bold text-center mb-8 text-yellow-400"
+          className="text-4xl text-white font-medium drop-shadow-lg"
           data-aos="zoom-in"
         >
-          Create an Account
+          Sign up
         </h2>
+        <p
+          className="text-sm text-gray-200 mt-3 drop-shadow-md"
+          data-aos="fade-up"
+          data-aos-delay="100"
+        >
+          Create your account to get started
+        </p>
 
-        {/* Full Name */}
-        <label className="block mb-5">
-          <span className="text-gray-300">Full Name</span>
-          <input
-            type="text"
-            name="name"
-            required
-            value={formData.name}
-            onChange={handleChange}
-            className="w-full mt-1 p-3 rounded-md bg-slate-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-yellow-400 transition hover:border-yellow-400"
-            placeholder="John Doe"
-          />
-        </label>
-
-        {/* Email */}
-        <label className="block mb-5">
-          <span className="text-gray-300">Email Address</span>
-          <input
-            type="email"
-            name="email"
-            required
-            value={formData.email}
-            onChange={handleChange}
-            className="w-full mt-1 p-3 rounded-md bg-slate-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-yellow-400 transition hover:border-yellow-400"
-            placeholder="you@example.com"
-          />
-        </label>
-
-        {/* Password */}
-        <label className="block mb-5">
-          <span className="text-gray-300">Password</span>
-          <input
-            type="password"
-            name="password"
-            required
-            value={formData.password}
-            onChange={handleChange}
-            className="w-full mt-1 p-3 rounded-md bg-slate-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-yellow-400 transition hover:border-yellow-400"
-            placeholder="********"
-          />
-        </label>
-
-        {/* Confirm Password */}
-        <label className="block mb-6">
-          <span className="text-gray-300">Confirm Password</span>
-          <input
-            type="password"
-            name="confirmPassword"
-            required
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            className="w-full mt-1 p-3 rounded-md bg-slate-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-yellow-400 transition hover:border-yellow-400"
-            placeholder="********"
-          />
-        </label>
+        {[
+          { label: "Firstname", name: "firstname", type: "text", delay: 200 },
+          { label: "Lastname", name: "lastname", type: "text", delay: 250 },
+          { label: "Email", name: "email", type: "email", delay: 300 },
+          { label: "Password", name: "password", type: "password", delay: 400 },
+          {
+            label: "Confirm Password",
+            name: "confirmPassword",
+            type: "password",
+            delay: 500,
+          },
+        ].map((field, idx) => (
+          <div
+            key={idx}
+            className="w-full mt-4"
+            data-aos="fade-up"
+            data-aos-delay={field.delay}
+          >
+            <div className="flex items-center bg-transparent border border-white/40 h-12 hover:border-yellow-400 rounded-full overflow-hidden pl-6 gap-2">
+              <input
+                type={field.type}
+                name={field.name}
+                placeholder={field.label}
+                className="bg-transparent text-white placeholder-white-500 outline-none text-sm w-full h-full"
+                value={formData[field.name]}
+                onChange={(e) =>
+                  setFormData({ ...formData, [field.name]: e.target.value })
+                }
+                required
+              />
+            </div>
+          </div>
+        ))}
 
         <button
           type="submit"
-          className="w-full py-3 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-600 text-black font-bold hover:from-yellow-500 hover:to-yellow-700 transition duration-300"
+          disabled={isLoading}
+          className="mt-8 w-full h-11 rounded-full text-black font-medium bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-yellow-400/30 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-50"
+          data-aos="fade-up"
+          data-aos-delay="600"
         >
-          Register
+          {isLoading ? "Creating..." : "Create Account"}
         </button>
 
-        <p className="text-center text-gray-400 mt-6">
+        <p className="text-gray-200 text-sm mt-4" data-aos-delay="700">
           Already have an account?{" "}
-          <Link to="/login" className="text-yellow-400 hover:underline">
-            Login here
+          <Link
+            to="/login"
+            className="text-yellow-400 hover:text-yellow-300 hover:underline transition-colors duration-300"
+          >
+            Sign in
           </Link>
         </p>
-      </motion.form>
+      </form>
     </div>
   );
 }
