@@ -41,7 +41,7 @@ export default function HeroPage() {
             </span>
           </h1>
           <p className="text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto">
-            Discover the world with SkyVoyage. Premium flights, exceptional
+            Discover the world with FlyNest. Premium flights, exceptional
             service, and unforgettable journeys await you.
           </p>
         </motion.div>

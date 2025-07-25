@@ -30,9 +30,10 @@ const Header = () => {
               transition={{ duration: 0.5 }}
               className="p-2 gold-gradient rounded-full"
             >
-              <Plane className="h-6 w-6 text-slate-900" />
+              <img src="/flynestlogo.png" alt="Logo" className="h-6 w-6 object-contain" />
+
             </motion.div>
-            <span className="text-2xl font-bold text-white">SkyVoyage</span>
+            <span className="text-2xl font-bold text-white">FlyNest</span>
           </Link>
 
           {/* Desktop Navigation */}
