@@ -19,8 +19,8 @@ function App() {
         <Header />
         <AnimatePresence mode="wait">
           <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/login" element={<LoginPage />} />
+            <Route path="/" element={<LoginPage />} />
+            <Route path="/home" element={<HomePage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/flights" element={<FlightResults />} />
             <Route path="/passengers" element={<PassengerDetails />} />

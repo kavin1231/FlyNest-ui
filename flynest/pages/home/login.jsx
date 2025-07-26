@@ -41,7 +41,7 @@ export default function LoginPage() {
         if (user.role === "admin") {
           navigate("/admin");
         } else if (user.role === "customer") {
-          navigate("/");
+          navigate("/home");
         }
       })
       .catch(() => {

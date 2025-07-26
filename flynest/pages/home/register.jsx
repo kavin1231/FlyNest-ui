@@ -47,7 +47,7 @@ export default function RegisterPage() {
       })
       .then(() => {
         toast.success("Registration Successful");
-        navigate("/login");
+        navigate("/");
       })
       .catch((err) => {
         toast.error(err?.response?.data?.error || "An error occurred");

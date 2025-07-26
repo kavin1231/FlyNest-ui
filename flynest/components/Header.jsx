@@ -1,19 +1,41 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Plane, Menu, X, User } from "lucide-react";
+import { Menu, X, User } from "lucide-react";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(() => !!localStorage.getItem("token"));
   const location = useLocation();
   const navigate = useNavigate();
 
-  const navItems = [
-    { name: "Home", path: "/" },
+  // All nav items
+  const allNavItems = [
+    { name: "Home", path: "/home" },
     { name: "Flights", path: "/flights" },
     { name: "About", path: "/about" },
     { name: "Destinations", path: "/destinations" },
   ];
+
+  // Public nav items when not logged in
+  const guestNavItems = [
+    { name: "Home", path: "/" },
+    { name: "About", path: "/about" },
+  ];
+
+  // Choose nav items based on login status
+  const navItems = isLoggedIn ? allNavItems : guestNavItems;
+
+  useEffect(() => {
+    setIsLoggedIn(!!localStorage.getItem("token"));
+  }, [location]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    setIsLoggedIn(false);
+    setIsMenuOpen(false);
+    navigate("/");
+  };
 
   return (
     <motion.header
@@ -25,7 +47,10 @@ const Header = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="flex justify-between items-center h-20">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
+          <Link
+            to={isLoggedIn ? "/home" : "/"}
+            className="flex items-center space-x-2"
+          >
             <motion.div
               whileHover={{ rotate: 360 }}
               transition={{ duration: 0.5 }}
@@ -72,14 +97,25 @@ const Header = () => {
             >
               <User className="h-5 w-5" />
             </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => navigate("/login")}
-              className="px-6 py-2 gold-gradient text-slate-900 font-semibold rounded-full hover:shadow-lg transition-shadow"
-            >
-              Sign In
-            </motion.button>
+            {isLoggedIn ? (
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleLogout}
+                className="px-6 py-2 gold-gradient text-slate-900 font-semibold rounded-full hover:shadow-lg transition-shadow"
+              >
+                Log Out
+              </motion.button>
+            ) : (
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => navigate("/")}
+                className="px-6 py-2 gold-gradient text-slate-900 font-semibold rounded-full hover:shadow-lg transition-shadow"
+              >
+                Sign In
+              </motion.button>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -87,11 +123,7 @@ const Header = () => {
             className="md:hidden p-2 text-white"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
-            {isMenuOpen ? (
-              <X className="h-6 w-6" />
-            ) : (
-              <Menu className="h-6 w-6" />
-            )}
+            {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
         </div>
 
@@ -116,15 +148,24 @@ const Header = () => {
               </Link>
             ))}
             <div className="pt-4 border-t border-gray-700">
-              <button
-                onClick={() => {
-                  setIsMenuOpen(false);
-                  navigate("/login");
-                }}
-                className="w-full px-6 py-3 gold-gradient text-slate-900 font-semibold rounded-full"
-              >
-                Sign In
-              </button>
+              {isLoggedIn ? (
+                <button
+                  onClick={handleLogout}
+                  className="w-full px-6 py-3 gold-gradient text-slate-900 font-semibold rounded-full"
+                >
+                  Log Out
+                </button>
+              ) : (
+                <button
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    navigate("/");
+                  }}
+                  className="w-full px-6 py-3 gold-gradient text-slate-900 font-semibold rounded-full"
+                >
+                  Sign In
+                </button>
+              )}
             </div>
           </div>
         </motion.div>
