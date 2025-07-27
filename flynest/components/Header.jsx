@@ -14,7 +14,7 @@ const Header = () => {
     { name: "Home", path: "/home" },
     { name: "Flights", path: "/flights" },
     { name: "About", path: "/about" },
-    { name: "Destinations", path: "/destinations" },
+    { name: "Bookings", path: "/bookings" },
   ];
 
   // Public nav items when not logged in
