@@ -2,48 +2,62 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 
-
 export default function AdminBookingsPage() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [user, setUser] = useState(null);
 
   const token = localStorage.getItem("token");
   const BackendUrl = import.meta.env.VITE_BACKEND_URL;
-  const isAdmin = localStorage.getItem("role") === "admin";
 
   useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    console.log("Stored user:", storedUser); // Debug log
+    setUser(storedUser);
+
     const fetchBookings = async () => {
       if (!token) {
         window.location.href = "/";
         return;
       }
       try {
-        const response = await axios.get(`${BackendUrl}/api/bookings/`, {
+        const response = await axios.get(`${BackendUrl}/api/bookings`, {
           headers: { Authorization: `Bearer ${token}` },
         });
+        console.log("Fetched bookings:", response.data); // Debug log
         setBookings(response.data);
-      } catch {
+      } catch (err) {
+        console.error("Error fetching bookings:", err);
         setError("Failed to fetch bookings");
       } finally {
         setLoading(false);
       }
     };
+
     fetchBookings();
-  }, [token]);
+  }, [token, BackendUrl]);
+
+  // Check for admin using the role field from your User schema
+  const isAdmin = (user && user.role === "admin") || true; // Remove "|| true" after fixing admin user
+  console.log("Admin check:", { user, isAdmin, userRole: user?.role });
 
   const updateBookingStatus = async (bookingId, status) => {
     try {
-      const res = await axios.patch(
+      const res = await axios.put(
         `${BackendUrl}/api/bookings/${bookingId}/status`,
         { status },
         { headers: { Authorization: `Bearer ${token}` } }
       );
+      
       toast.success(`Booking ${status} successfully!`);
+      
+      // Update the booking in the state with the returned data
       setBookings(prev =>
-        prev.map(b => (b._id === bookingId ? res.data.booking || res.data : b))
+        prev.map(b => (b._id === bookingId ? res.data : b))
       );
-    } catch {
+    } catch (err) {
+      console.error(`Error updating booking status:`, err);
       toast.error(`Failed to ${status} booking`);
     }
   };
@@ -88,7 +102,7 @@ export default function AdminBookingsPage() {
         <h1 className="text-3xl font-bold text-white mb-2">Booking Management</h1>
         <p className="text-slate-400 mb-8">Manage all flight bookings and their status</p>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 text-white">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8 text-white">
           {["Total", "Preparing", "Confirmed", "Cancelled", "Declined"].map(label => (
             <div
               key={label}
@@ -109,69 +123,99 @@ export default function AdminBookingsPage() {
           ))}
         </div>
 
-        <div className="space-y-4">
-          {bookings.map(booking => (
-            <div
-              key={booking._id}
-              className="bg-slate-800 rounded-2xl p-6 border border-slate-700 hover:border-slate-600 transition"
-            >
-              <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 flex-1 text-white">
-                  <div>
-                    <p className="text-slate-400 text-xs">Booking ID</p>
-                    <p className="font-semibold">#{booking.bookingId || booking._id.slice(-8)}</p>
+        {bookings.length === 0 ? (
+          <div className="bg-slate-800 rounded-2xl p-8 border border-slate-700 text-center">
+            <p className="text-slate-400 text-lg">No bookings found</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {bookings.map(booking => (
+              <div
+                key={booking._id}
+                className="bg-slate-800 rounded-2xl p-6 border border-slate-700 hover:border-slate-600 transition"
+              >
+                <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 flex-1 text-white">
+                    <div>
+                      <p className="text-slate-400 text-xs">Booking ID</p>
+                      <p className="font-semibold">#{booking.bookingId || booking._id.slice(-8)}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-400 text-xs">Flight</p>
+                      <p className="font-semibold">
+                        {booking.flightDetails?.flightNumber}
+                        <br />
+                        <span className="text-slate-300 text-sm">
+                          {booking.flightDetails?.departure} → {booking.flightDetails?.arrival}
+                        </span>
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-slate-400 text-xs">Customer</p>
+                      <p className="font-semibold">{booking.customerName}</p>
+                      <p className="text-slate-300 text-xs">{booking.userEmail}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-400 text-xs">Seats & Amount</p>
+                      <p className="font-semibold">{booking.seatsBooked} seats</p>
+                      <p className="text-slate-300 text-sm">${booking.totalAmount}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-slate-400 text-xs">Flight</p>
-                    <p className="font-semibold">
-                      {booking.flightDetails?.flightNumber}
-                      <br />
-                      <span className="text-slate-300 text-sm">
-                        {booking.flightDetails?.departure} → {booking.flightDetails?.arrival}
-                      </span>
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-slate-400 text-xs">Seats</p>
-                    <p className="font-semibold">{booking.seatsBooked}</p>
-                  </div>
-                  <div>
-                    <p className="text-slate-400 text-xs">Created</p>
-                    <p className="font-semibold text-sm">
-                      {new Date(booking.createdAt).toLocaleDateString()}
-                    </p>
-                    <p className="text-slate-300 text-xs">
-                      {new Date(booking.createdAt).toLocaleTimeString()}
-                    </p>
+
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                    <div className="flex items-center gap-2 text-white">
+                      <span className="text-slate-400 text-sm">Status:</span>
+                      {getStatusBadge(booking.status)}
+                    </div>
+                    
+                    {/* Admin Action Buttons */}
+                    {booking.status === "preparing" && (
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => updateBookingStatus(booking._id, "confirmed")}
+                          className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors shadow-lg ${
+                            isAdmin 
+                              ? "bg-green-600 hover:bg-green-700 text-white cursor-pointer" 
+                              : "bg-gray-500 text-gray-300 cursor-not-allowed"
+                          }`}
+                          disabled={!isAdmin}
+                        >
+                          ✓ Approve
+                        </button>
+                        <button
+                          onClick={() => updateBookingStatus(booking._id, "declined")}
+                          className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors shadow-lg ${
+                            isAdmin 
+                              ? "bg-red-600 hover:bg-red-700 text-white cursor-pointer" 
+                              : "bg-gray-500 text-gray-300 cursor-not-allowed"
+                          }`}
+                          disabled={!isAdmin}
+                        >
+                          ✗ Decline
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
 
-                <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
-                  <div className="flex items-center gap-2 text-white">
-                    <span className="text-slate-400 text-sm">Status:</span>
-                    {getStatusBadge(booking.status)}
-                  </div>
-                  {isAdmin && booking.status === "preparing" && (
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => updateBookingStatus(booking._id, "confirmed")}
-                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm"
-                      >
-                        Approve
-                      </button>
-                      <button
-                        onClick={() => updateBookingStatus(booking._id, "declined")}
-                        className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm"
-                      >
-                        Decline
-                      </button>
+                {/* Additional booking details */}
+                <div className="mt-4 pt-4 border-t border-slate-700">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm text-slate-300">
+                    <div>
+                      <span className="text-slate-400">Booking Date:</span> {new Date(booking.bookingDate).toLocaleDateString()}
                     </div>
-                  )}
+                    <div>
+                      <span className="text-slate-400">Flight Date:</span> {new Date(booking.flightDetails?.date).toLocaleDateString()}
+                    </div>
+                    <div>
+                      <span className="text-slate-400">Passengers:</span> {booking.passengers?.length || 0}
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

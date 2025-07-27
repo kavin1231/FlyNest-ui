@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Filter, Clock, Plane } from 'lucide-react';
 import FlightCard from '../components/FlightCard';
 import LoadingSpinner from '../components/LoadingSpinner';
+import Header from '../components/Header';
 
 const FlightResults = () => {
   const location = useLocation();
@@ -70,7 +71,7 @@ const FlightResults = () => {
     >
       <div className="max-w-7xl mx-auto">
 
-        {/* Header */}
+        <Header />
         <motion.div
           initial={{ y: -40, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}

@@ -5,6 +5,7 @@ import { useNavigate, Link } from "react-router-dom";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { motion } from "framer-motion";
+import Header from "../../components/Header";
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -62,6 +63,7 @@ export default function RegisterPage() {
       className="flex min-h-screen w-full bg-cover bg-center bg-no-repeat items-center justify-center relative"
       style={{ backgroundImage: `url('/bglg.jpg')` }}
     >
+      <Header />
       <motion.img
         src="/planehero.png"
         alt="Airplane"
@@ -159,7 +161,7 @@ export default function RegisterPage() {
         <p className="text-gray-200 text-sm mt-4" data-aos-delay="700">
           Already have an account?{" "}
           <Link
-            to="/login"
+            to="/"
             className="text-yellow-400 hover:text-yellow-300 hover:underline transition-colors duration-300"
           >
             Sign in

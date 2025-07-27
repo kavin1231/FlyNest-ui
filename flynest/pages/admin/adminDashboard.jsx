@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Users, Plane, Calendar, DollarSign, TrendingUp, Clock } from 'lucide-react';
 import BookingsPage from './bookingManagement';
+import Header2 from '../../components/Header2';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -34,8 +35,9 @@ const AdminDashboard = () => {
       exit={{ opacity: 0 }}
       className="pt-24 pb-20 px-4 sm:px-6 lg:px-8 min-h-screen"
     >
+      <Header2 />
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
+        
         <motion.div
           initial={{ y: -50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -152,7 +154,7 @@ const AdminDashboard = () => {
 
           {activeTab === 'bookings' && (
             <div className="text-center py-12">
-              <BookingsPage/>
+               <BookingsPage/>
             </div>
           )}
 

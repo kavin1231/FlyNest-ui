@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { motion } from "framer-motion";
+import Header from "../../components/Header";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -56,6 +57,7 @@ export default function LoginPage() {
         backgroundImage: `url('/bglg.jpg')`,
       }}
     >
+      <Header />
       <motion.img
         src="/planehero.png"
         alt="Airplane"
