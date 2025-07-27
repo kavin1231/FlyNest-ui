@@ -11,6 +11,7 @@ import AdminDashboard from "../pages/admin/adminDashboard";
 import "./styles/globals.css";
 import LoginPage from "../pages/home/login.jsx";
 import RegisterPage from "../pages/home/register.jsx";
+import BookingsPage from "../pages/admin/bookingManagement.jsx";
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
             <Route path="/passengers" element={<PassengerDetails />} />
             <Route path="/confirmation" element={<BookingConfirmation />} />
             <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/bookings" element={<BookingsPage />} />
           </Routes>
         </AnimatePresence>
         <Footer />

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Users, Plane, Calendar, DollarSign, TrendingUp, Clock } from 'lucide-react';
+import BookingsPage from './bookingManagement';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -151,9 +152,7 @@ const AdminDashboard = () => {
 
           {activeTab === 'bookings' && (
             <div className="text-center py-12">
-              <Calendar className="h-16 w-16 text-gray-600 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Bookings Management</h3>
-              <p className="text-gray-400">Detailed booking management interface would go here</p>
+              <BookingsPage/>
             </div>
           )}
 
