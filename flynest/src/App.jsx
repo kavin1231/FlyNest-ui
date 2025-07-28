@@ -12,12 +12,13 @@ import LoginPage from "../pages/home/login.jsx";
 import RegisterPage from "../pages/home/register.jsx";
 import AdminBookingsPage from "../pages/admin/bookingManagement.jsx";
 import CustomerBookingsPage from "../pages/home/myFlightBookings.jsx";
+import CreateFlight from "../pages/admin/createFlight.jsx";
+import AdminFlight from "../pages/admin/adminFlight.jsx";
 
 function App() {
   return (
     <Router>
       <div className="min-h-screen bg-slate-900 text-white overflow-x-hidden">
-        
         <AnimatePresence mode="wait">
           <Routes>
             <Route path="/" element={<LoginPage />} />
@@ -29,6 +30,8 @@ function App() {
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/bookings" element={<AdminBookingsPage />} />
             <Route path="/bookings" element={<CustomerBookingsPage />} />
+            <Route path="/admin-flights" element={<AdminFlight />} />
+            <Route path="/create-flight" element={<CreateFlight />} />
           </Routes>
         </AnimatePresence>
         <Footer />

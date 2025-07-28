@@ -1,31 +1,83 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Users, Plane, Calendar, DollarSign, TrendingUp, Clock } from 'lucide-react';
-import BookingsPage from './bookingManagement';
-import Header2 from '../../components/Header2';
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+import {
+  Users,
+  Plane,
+  Calendar,
+  DollarSign,
+  TrendingUp,
+  Clock,
+} from "lucide-react";
+import BookingsPage from "./bookingManagement";
+import Header2 from "../../components/Header2";
+import AdminFlight from "./adminFlight";
 
 const AdminDashboard = () => {
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState("overview");
 
   const stats = [
-    { icon: <Users className="h-8 w-8" />, label: 'Total Passengers', value: '12,847', change: '+12%' },
-    { icon: <Plane className="h-8 w-8" />, label: 'Active Flights', value: '234', change: '+8%' },
-    { icon: <Calendar className="h-8 w-8" />, label: 'Bookings Today', value: '89', change: '+23%' },
-    { icon: <DollarSign className="h-8 w-8" />, label: 'Revenue', value: '$2.4M', change: '+15%' },
+    {
+      icon: <Users className="h-8 w-8" />,
+      label: "Total Passengers",
+      value: "12,847",
+      change: "+12%",
+    },
+    {
+      icon: <Plane className="h-8 w-8" />,
+      label: "Active Flights",
+      value: "234",
+      change: "+8%",
+    },
+    {
+      icon: <Calendar className="h-8 w-8" />,
+      label: "Bookings Today",
+      value: "89",
+      change: "+23%",
+    },
+    {
+      icon: <DollarSign className="h-8 w-8" />,
+      label: "Revenue",
+      value: "$2.4M",
+      change: "+15%",
+    },
   ];
 
   const recentBookings = [
-    { id: 'SK001', passenger: 'John Doe', route: 'LAX → DXB', date: '2024-01-15', status: 'Confirmed' },
-    { id: 'SK002', passenger: 'Jane Smith', route: 'JFK → LHR', date: '2024-01-15', status: 'Pending' },
-    { id: 'SK003', passenger: 'Mike Johnson', route: 'CDG → NRT', date: '2024-01-14', status: 'Confirmed' },
-    { id: 'SK004', passenger: 'Sarah Wilson', route: 'DXB → LAX', date: '2024-01-14', status: 'Cancelled' },
+    {
+      id: "SK001",
+      passenger: "John Doe",
+      route: "LAX → DXB",
+      date: "2024-01-15",
+      status: "Confirmed",
+    },
+    {
+      id: "SK002",
+      passenger: "Jane Smith",
+      route: "JFK → LHR",
+      date: "2024-01-15",
+      status: "Pending",
+    },
+    {
+      id: "SK003",
+      passenger: "Mike Johnson",
+      route: "CDG → NRT",
+      date: "2024-01-14",
+      status: "Confirmed",
+    },
+    {
+      id: "SK004",
+      passenger: "Sarah Wilson",
+      route: "DXB → LAX",
+      date: "2024-01-14",
+      status: "Cancelled",
+    },
   ];
 
   const tabs = [
-    { id: 'overview', label: 'Overview' },
-    { id: 'bookings', label: 'Bookings' },
-    { id: 'flights', label: 'Flights' },
-    { id: 'passengers', label: 'Passengers' },
+    { id: "overview", label: "Overview" },
+    { id: "bookings", label: "Bookings" },
+    { id: "flights", label: "Flights" },
+    { id: "passengers", label: "Passengers" },
   ];
 
   return (
@@ -37,14 +89,15 @@ const AdminDashboard = () => {
     >
       <Header2 />
       <div className="max-w-7xl mx-auto">
-        
         <motion.div
           initial={{ y: -50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           className="mb-8"
         >
           <h1 className="text-3xl font-bold mb-2">Admin Dashboard</h1>
-          <p className="text-gray-400">Manage flights, bookings, and passengers</p>
+          <p className="text-gray-400">
+            Manage flights, bookings, and passengers
+          </p>
         </motion.div>
 
         {/* Tabs */}
@@ -61,8 +114,8 @@ const AdminDashboard = () => {
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex-1 px-6 py-3 rounded-xl text-sm font-medium transition-all ${
                   activeTab === tab.id
-                    ? 'bg-yellow-400 text-slate-900'
-                    : 'text-gray-400 hover:text-white'
+                    ? "bg-yellow-400 text-slate-900"
+                    : "text-gray-400 hover:text-white"
                 }`}
               >
                 {tab.label}
@@ -106,18 +159,28 @@ const AdminDashboard = () => {
           transition={{ delay: 0.6 }}
           className="glassmorphism-card rounded-2xl p-8"
         >
-          {activeTab === 'overview' && (
+          {activeTab === "overview" && (
             <div>
               <h2 className="text-2xl font-semibold mb-6">Recent Bookings</h2>
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-slate-700">
-                      <th className="text-left py-3 px-4 font-medium text-gray-400">Booking ID</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-400">Passenger</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-400">Route</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-400">Date</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-400">Status</th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-400">
+                        Booking ID
+                      </th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-400">
+                        Passenger
+                      </th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-400">
+                        Route
+                      </th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-400">
+                        Date
+                      </th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-400">
+                        Status
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -129,18 +192,24 @@ const AdminDashboard = () => {
                         transition={{ delay: 0.8 + index * 0.1 }}
                         className="border-b border-slate-800 hover:bg-slate-800/50 transition-colors"
                       >
-                        <td className="py-4 px-4 font-mono text-yellow-400">{booking.id}</td>
+                        <td className="py-4 px-4 font-mono text-yellow-400">
+                          {booking.id}
+                        </td>
                         <td className="py-4 px-4">{booking.passenger}</td>
                         <td className="py-4 px-4">{booking.route}</td>
-                        <td className="py-4 px-4 text-gray-400">{booking.date}</td>
+                        <td className="py-4 px-4 text-gray-400">
+                          {booking.date}
+                        </td>
                         <td className="py-4 px-4">
-                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                            booking.status === 'Confirmed'
-                              ? 'bg-green-500/20 text-green-400'
-                              : booking.status === 'Pending'
-                              ? 'bg-yellow-500/20 text-yellow-400'
-                              : 'bg-red-500/20 text-red-400'
-                          }`}>
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-medium ${
+                              booking.status === "Confirmed"
+                                ? "bg-green-500/20 text-green-400"
+                                : booking.status === "Pending"
+                                ? "bg-yellow-500/20 text-yellow-400"
+                                : "bg-red-500/20 text-red-400"
+                            }`}
+                          >
                             {booking.status}
                           </span>
                         </td>
@@ -152,25 +221,27 @@ const AdminDashboard = () => {
             </div>
           )}
 
-          {activeTab === 'bookings' && (
+          {activeTab === "bookings" && (
             <div className="text-center py-12">
-               <BookingsPage/>
+              <BookingsPage />
             </div>
           )}
 
-          {activeTab === 'flights' && (
+          {activeTab === "flights" && (
             <div className="text-center py-12">
-              <Plane className="h-16 w-16 text-gray-600 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Flight Management</h3>
-              <p className="text-gray-400">Flight scheduling and management interface would go here</p>
+              <AdminFlight />
             </div>
           )}
 
-          {activeTab === 'passengers' && (
+          {activeTab === "passengers" && (
             <div className="text-center py-12">
               <Users className="h-16 w-16 text-gray-600 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Passenger Management</h3>
-              <p className="text-gray-400">Passenger information and management interface would go here</p>
+              <h3 className="text-xl font-semibold mb-2">
+                Passenger Management
+              </h3>
+              <p className="text-gray-400">
+                Passenger information and management interface would go here
+              </p>
             </div>
           )}
         </motion.div>
