@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import Header from "../../components/Header";
 
 export default function CustomerBookingsPage() {
   const [bookings, setBookings] = useState([]);
@@ -85,6 +86,7 @@ export default function CustomerBookingsPage() {
 
   return (
     <div className="min-h-screen bg-slate-900 py-8">
+      <Header />
       <div className="max-w-5xl mx-auto px-6 mt-20">
         <h1 className="text-3xl font-bold text-white mb-2">My Bookings</h1>
         <p className="text-slate-400 mb-8">Here are your flight bookings</p>

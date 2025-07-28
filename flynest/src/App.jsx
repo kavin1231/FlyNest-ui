@@ -14,6 +14,7 @@ import AdminBookingsPage from "../pages/admin/bookingManagement.jsx";
 import CustomerBookingsPage from "../pages/home/myFlightBookings.jsx";
 import CreateFlight from "../pages/admin/createFlight.jsx";
 import AdminFlight from "../pages/admin/adminFlight.jsx";
+import AboutUsPage from "../pages/home/aboutusPage.jsx";
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
             <Route path="/bookings" element={<CustomerBookingsPage />} />
             <Route path="/admin-flights" element={<AdminFlight />} />
             <Route path="/create-flight" element={<CreateFlight />} />
+            <Route path="/about" element={<AboutUsPage />} />
           </Routes>
         </AnimatePresence>
         <Footer />
