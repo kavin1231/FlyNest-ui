@@ -1,21 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { useLocation, useNavigate } from "react-router-dom";
-import {
-  Filter,
-  Clock,
-  Plane,
-  ArrowRight,
-  Calendar,
-  Users,
-} from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Filter, Plane, Calendar, Clock } from "lucide-react";
 import axios from "axios";
 import FlightCard from "../components/FlightCard";
 import LoadingSpinner from "../components/LoadingSpinner";
 import Header from "../components/Header";
 
 const FlightResults = () => {
-  const location = useLocation();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [flights, setFlights] = useState([]);
@@ -24,31 +16,43 @@ const FlightResults = () => {
   const [filters, setFilters] = useState({
     sortBy: "price", // price, duration, departure
     timeRange: "all", // all, morning, afternoon, evening
-    maxPrice: null,
   });
 
-  const searchData = location.state || {};
-
   useEffect(() => {
-    const fetchFlights = async () => {
-      if (!searchData.from || !searchData.to || !searchData.departure) {
-        setError("Missing search criteria. Please search again.");
-        setLoading(false);
-        return;
-      }
-
+    const fetchAllFlights = async () => {
       try {
         setLoading(true);
-        const res = await axios.get(
-          `${import.meta.env.VITE_BACKEND_URL}/flights`,
-          {
-            params: {
-              from: searchData.from,
-              to: searchData.to,
-              date: searchData.departure,
-            },
+        setError("");
+
+        const backendUrl =
+          import.meta.env.VITE_BACKEND_URL || "https://flynest.onrender.com";
+        console.log("Fetching all flights from:", `${backendUrl}/api/flights`);
+
+        // Try the customer endpoint first (no auth required)
+        let res;
+        try {
+          // First try the dedicated customer endpoint
+          console.log("Trying customer endpoint...");
+          res = await axios.get(`${backendUrl}/api/flights/customer/all`, {
+            timeout: 30000,
+          });
+          console.log("Customer endpoint success:", res.data);
+        } catch (customerError) {
+          console.log("Customer endpoint failed:", customerError.response?.status || customerError.message);
+          console.log("Trying public search endpoint...");
+          try {
+            // Fallback to public search endpoint (no filters)
+            res = await axios.get(`${backendUrl}/api/flights`, {
+              timeout: 30000,
+            });
+            console.log("Public endpoint success:", res.data);
+          } catch (publicError) {
+            console.log("Public endpoint failed:", publicError.response?.status || publicError.message);
+            throw publicError; // Re-throw the last error
           }
-        );
+        }
+
+        console.log("All flights response:", res.data);
 
         const flightData = res.data || [];
         setFlights(flightData);
@@ -56,13 +60,28 @@ const FlightResults = () => {
         setLoading(false);
       } catch (err) {
         console.error("Error fetching flights:", err);
-        setError("Failed to load flights. Please try again later.");
+
+        let errorMessage = "Failed to load flights. Please try again later.";
+
+        if (err.code === "ECONNABORTED") {
+          errorMessage =
+            "Request timed out. Please check your connection and try again.";
+        } else if (err.response) {
+          errorMessage = `Server error: ${err.response.status}. ${
+            err.response.data?.message || "Please try again later."
+          }`;
+        } else if (err.request) {
+          errorMessage =
+            "No response from server. Please check your connection.";
+        }
+
+        setError(errorMessage);
         setLoading(false);
       }
     };
 
-    fetchFlights();
-  }, [searchData]);
+    fetchAllFlights();
+  }, []); // Empty dependency array - fetch once on component mount
 
   // Apply filters and sorting
   useEffect(() => {
@@ -71,36 +90,58 @@ const FlightResults = () => {
     // Time range filter
     if (filters.timeRange !== "all") {
       filtered = filtered.filter((flight) => {
-        const hour = new Date(flight.departureTime).getHours();
-        switch (filters.timeRange) {
-          case "morning":
-            return hour >= 6 && hour < 12;
-          case "afternoon":
-            return hour >= 12 && hour < 18;
-          case "evening":
-            return hour >= 18 || hour < 6;
-          default:
-            return true;
+        try {
+          const departureTime = new Date(flight.departureTime);
+          if (isNaN(departureTime.getTime())) {
+            return true; // Include flight if time parsing fails
+          }
+
+          const hour = departureTime.getHours();
+          switch (filters.timeRange) {
+            case "morning":
+              return hour >= 6 && hour < 12;
+            case "afternoon":
+              return hour >= 12 && hour < 18;
+            case "evening":
+              return hour >= 18 || hour < 6;
+            default:
+              return true;
+          }
+        } catch (e) {
+          return true;
         }
       });
-    }
-
-    // Price filter
-    if (filters.maxPrice) {
-      filtered = filtered.filter((flight) => flight.price <= filters.maxPrice);
     }
 
     // Sort flights
     filtered.sort((a, b) => {
       switch (filters.sortBy) {
         case "price":
-          return a.price - b.price;
+          const priceA =
+            typeof a.price === "string"
+              ? parseFloat(a.price.replace(/[^0-9.-]+/g, ""))
+              : a.price;
+          const priceB =
+            typeof b.price === "string"
+              ? parseFloat(b.price.replace(/[^0-9.-]+/g, ""))
+              : b.price;
+          return priceA - priceB;
         case "duration":
-          const durationA = new Date(a.arrivalTime) - new Date(a.departureTime);
-          const durationB = new Date(b.arrivalTime) - new Date(b.departureTime);
-          return durationA - durationB;
+          try {
+            const durationA =
+              new Date(a.arrivalTime) - new Date(a.departureTime);
+            const durationB =
+              new Date(b.arrivalTime) - new Date(b.departureTime);
+            return durationA - durationB;
+          } catch (e) {
+            return 0;
+          }
         case "departure":
-          return new Date(a.departureTime) - new Date(b.departureTime);
+          try {
+            return new Date(a.departureTime) - new Date(b.departureTime);
+          } catch (e) {
+            return 0;
+          }
         default:
           return 0;
       }
@@ -110,10 +151,8 @@ const FlightResults = () => {
   }, [flights, filters]);
 
   const handleSelectFlight = (flight) => {
-    setLoading(true);
-    setTimeout(() => {
-      navigate("/passengers", { state: { flight, searchData } });
-    }, 1500);
+    console.log("Selected flight:", flight);
+    navigate("/passengers", { state: { flight } });
   };
 
   const handleFilterChange = (filterType, value) => {
@@ -123,17 +162,8 @@ const FlightResults = () => {
     }));
   };
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      weekday: "short",
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
-
   if (loading) {
-    return <LoadingSpinner message="Searching for the best flights..." />;
+    return <LoadingSpinner message="Loading available flights..." />;
   }
 
   if (error) {
@@ -150,10 +180,10 @@ const FlightResults = () => {
           <h2 className="text-2xl font-semibold text-red-400 mb-4">Oops!</h2>
           <p className="text-gray-300 mb-6">{error}</p>
           <button
-            onClick={() => navigate("/")}
+            onClick={() => window.location.reload()}
             className="w-full px-6 py-3 bg-yellow-500 text-black font-semibold rounded-xl hover:bg-yellow-400 transition-colors"
           >
-            Start New Search
+            Try Again
           </button>
         </div>
       </motion.div>
@@ -170,7 +200,7 @@ const FlightResults = () => {
       <div className="max-w-7xl mx-auto">
         <Header />
 
-        {/* Search Summary */}
+        {/* Page Header */}
         <motion.div
           initial={{ y: -40, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -178,33 +208,11 @@ const FlightResults = () => {
           className="mb-8"
         >
           <h1 className="text-4xl font-bold text-yellow-400 mb-4">
-            Available Flights
+            All Available Flights
           </h1>
-          <div className="bg-slate-800/40 backdrop-blur border border-slate-600 rounded-2xl p-6">
-            <div className="flex flex-wrap items-center gap-4 text-lg">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
-                <span className="font-semibold">{searchData.from}</span>
-              </div>
-              <ArrowRight className="h-5 w-5 text-gray-400" />
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
-                <span className="font-semibold">{searchData.to}</span>
-              </div>
-              <div className="flex items-center gap-2 ml-4">
-                <Calendar className="h-5 w-5 text-gray-400" />
-                <span className="text-gray-300">
-                  {formatDate(searchData.departure)}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-gray-400" />
-                <span className="text-gray-300">
-                  {searchData.passengers || 1} passenger(s)
-                </span>
-              </div>
-            </div>
-          </div>
+          <p className="text-gray-300 text-lg">
+            Browse all flights and book your next journey
+          </p>
         </motion.div>
 
         {/* Filters and Sorting */}
@@ -247,17 +255,17 @@ const FlightResults = () => {
                   setFilters({
                     sortBy: "price",
                     timeRange: "all",
-                    maxPrice: null,
                   })
                 }
                 className="px-4 py-2 bg-slate-700 rounded-full hover:bg-slate-600 transition-colors text-sm"
               >
-                Clear Filters
+                Reset Filters
               </button>
             </div>
 
             <div className="text-sm text-gray-400">
-              {filteredFlights.length} of {flights.length} flights
+              {filteredFlights.length} flight
+              {filteredFlights.length !== 1 ? "s" : ""} available
             </div>
           </div>
         </motion.div>
@@ -267,7 +275,7 @@ const FlightResults = () => {
           <div className="space-y-6">
             {filteredFlights.map((flight, index) => (
               <motion.div
-                key={flight._id || index}
+                key={flight._id || flight.id || index}
                 initial={{ y: 50, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.4 + index * 0.1 }}
@@ -291,19 +299,18 @@ const FlightResults = () => {
                 No flights match your filters
               </h3>
               <p className="text-gray-400 mb-4">
-                Try adjusting your search criteria
+                Try adjusting your filter criteria
               </p>
               <button
                 onClick={() =>
                   setFilters({
                     sortBy: "price",
                     timeRange: "all",
-                    maxPrice: null,
                   })
                 }
                 className="px-6 py-2 bg-yellow-500 text-black font-semibold rounded-xl hover:bg-yellow-400 transition-colors"
               >
-                Clear Filters
+                Reset Filters
               </button>
             </div>
           </motion.div>
@@ -319,13 +326,13 @@ const FlightResults = () => {
                 No flights available
               </h3>
               <p className="text-gray-400 mb-4">
-                No flights found for your selected route and date.
+                No flights have been added yet. Check back later!
               </p>
               <button
-                onClick={() => navigate("/")}
+                onClick={() => window.location.reload()}
                 className="px-6 py-2 bg-yellow-500 text-black font-semibold rounded-xl hover:bg-yellow-400 transition-colors"
               >
-                Search Different Route
+                Refresh
               </button>
             </div>
           </motion.div>
