@@ -5,7 +5,9 @@ import { Menu, X, User } from "lucide-react";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(() => !!localStorage.getItem("token"));
+  const [isLoggedIn, setIsLoggedIn] = useState(
+    () => !!localStorage.getItem("token")
+  );
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -93,6 +95,11 @@ const Header = () => {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              onClick={() => {
+                if (isLoggedIn) navigate("/profile");
+                else navigate("/");
+              }}
+              aria-label="Profile"
               className="p-2 text-gray-300 hover:text-white transition-colors"
             >
               <User className="h-5 w-5" />
@@ -123,7 +130,11 @@ const Header = () => {
             className="md:hidden p-2 text-white"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
-            {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            {isMenuOpen ? (
+              <X className="h-6 w-6" />
+            ) : (
+              <Menu className="h-6 w-6" />
+            )}
           </button>
         </div>
 
