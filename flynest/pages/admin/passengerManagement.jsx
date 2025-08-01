@@ -2,7 +2,6 @@ import React, { useEffect, useState, useMemo } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { Trash, Search } from "lucide-react";
-import Header from "../../components/Header";
 
 export default function AdminPassengersPage() {
   const [passengers, setPassengers] = useState([]);
@@ -47,7 +46,9 @@ export default function AdminPassengersPage() {
         if (err.response?.status === 401 || err.response?.status === 403) {
           setError("Unauthorized. Please log in with an admin account.");
         } else {
-          setError(err.response?.data?.error || "Failed to fetch passenger list");
+          setError(
+            err.response?.data?.error || "Failed to fetch passenger list"
+          );
         }
       } finally {
         setLoading(false);
@@ -114,14 +115,11 @@ export default function AdminPassengersPage() {
 
   return (
     <div className="min-h-screen bg-slate-900 py-8">
-      <Header />
-      <div className="max-w-7xl mx-auto px-6 mt-20">
+      <div className="max-w-7xl mx-auto px-6 mt-0">
         <h1 className="text-3xl font-bold text-white mb-2">
           Passenger Management
         </h1>
-        <p className="text-slate-400 mb-8">
-          View and manage all passengers
-        </p>
+        <p className="text-slate-400 mb-8">View and manage all passengers</p>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 text-white">
           <div className="bg-slate-800 rounded-2xl p-6 border border-slate-700 flex justify-between items-center">

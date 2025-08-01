@@ -90,13 +90,13 @@ const Footer = () => {
         >
           <div className="flex items-center space-x-2 mb-4 md:mb-0">
             <Plane className="h-6 w-6 text-yellow-400" />
-            <span className="text-xl font-bold">SkyVoyage</span>
+            <span className="text-xl font-bold">FlyNest</span>
           </div>
           
           <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-6 text-sm text-gray-400">
             <div className="flex items-center space-x-2">
               <Mail className="h-4 w-4" />
-              <span>info@skyvoyage.com</span>
+              <span>info@FlyNest.com</span>
             </div>
             <div className="flex items-center space-x-2">
               <Phone className="h-4 w-4" />
@@ -110,7 +110,7 @@ const Footer = () => {
         </motion.div>
 
         <div className="text-center mt-8 pt-8 border-t border-slate-700 text-sm text-gray-400">
-          <p>&copy; 2024 SkyVoyage. All rights reserved.</p>
+          <p>&copy; 2024 FlyNest. All rights reserved.</p>
         </div>
       </div>
     </footer>

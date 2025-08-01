@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Users,
@@ -6,8 +6,8 @@ import {
   Calendar,
   DollarSign,
   TrendingUp,
-  Clock,
 } from "lucide-react";
+import axios from "axios";
 import BookingsPage from "./bookingManagement";
 import Header2 from "../../components/Header2";
 import AdminFlight from "./adminFlight";
@@ -15,64 +15,36 @@ import AdminPassengersPage from "./passengerManagement";
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
-
-  const stats = [
+  const [recentBookings, setRecentBookings] = useState([]);
+  const [loadingBookings, setLoadingBookings] = useState(true);
+  const [bookingsError, setBookingsError] = useState(null);
+  const [user, setUser] = useState(null);
+  const [stats, setStats] = useState([
     {
       icon: <Users className="h-8 w-8" />,
       label: "Total Passengers",
-      value: "12,847",
-      change: "+12%",
+      value: "—",
+      change: "",
     },
     {
       icon: <Plane className="h-8 w-8" />,
       label: "Active Flights",
-      value: "234",
-      change: "+8%",
+      value: "—",
+      change: "",
     },
     {
       icon: <Calendar className="h-8 w-8" />,
       label: "Bookings Today",
-      value: "89",
-      change: "+23%",
+      value: "—",
+      change: "",
     },
     {
       icon: <DollarSign className="h-8 w-8" />,
       label: "Revenue",
-      value: "$2.4M",
-      change: "+15%",
+      value: "—",
+      change: "",
     },
-  ];
-
-  const recentBookings = [
-    {
-      id: "SK001",
-      passenger: "John Doe",
-      route: "LAX → DXB",
-      date: "2024-01-15",
-      status: "Confirmed",
-    },
-    {
-      id: "SK002",
-      passenger: "Jane Smith",
-      route: "JFK → LHR",
-      date: "2024-01-15",
-      status: "Pending",
-    },
-    {
-      id: "SK003",
-      passenger: "Mike Johnson",
-      route: "CDG → NRT",
-      date: "2024-01-14",
-      status: "Confirmed",
-    },
-    {
-      id: "SK004",
-      passenger: "Sarah Wilson",
-      route: "DXB → LAX",
-      date: "2024-01-14",
-      status: "Cancelled",
-    },
-  ];
+  ]);
 
   const tabs = [
     { id: "overview", label: "Overview" },
@@ -80,6 +52,148 @@ const AdminDashboard = () => {
     { id: "flights", label: "Flights" },
     { id: "passengers", label: "Passengers" },
   ];
+
+  const token = localStorage.getItem("token");
+  const BackendUrl = import.meta.env.VITE_BACKEND_URL;
+
+  // Load user (from storage or token)
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("user");
+      if (stored) {
+        setUser(JSON.parse(stored));
+      } else if (token) {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        setUser(payload);
+      }
+    } catch (e) {
+      console.warn("Failed to parse user:", e);
+    }
+  }, [token]);
+
+  const isAdmin = user?.role === "admin";
+
+  // Helper to compare same day in Asia/Colombo
+  const isSameColomboDay = (dateA, dateB) => {
+    try {
+      const toColombo = (d) =>
+        new Date(
+          new Date(d).toLocaleString("en-US", { timeZone: "Asia/Colombo" })
+        );
+      const a = toColombo(dateA);
+      const b = toColombo(dateB);
+      return (
+        a.getFullYear() === b.getFullYear() &&
+        a.getMonth() === b.getMonth() &&
+        a.getDate() === b.getDate()
+      );
+    } catch {
+      return false;
+    }
+  };
+
+  // Fetch bookings and derive stats
+  useEffect(() => {
+    if (!token) return;
+    const fetchRecent = async () => {
+      setLoadingBookings(true);
+      setBookingsError(null);
+      try {
+        const res = await axios.get(`${BackendUrl}/api/bookings`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const all = Array.isArray(res.data) ? res.data : [];
+        // Sort newest
+        const sorted = all.slice().sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        );
+        setRecentBookings(sorted.slice(0, 10));
+
+        // Compute stats
+        const totalPassengers = all.reduce(
+          (sum, b) => sum + (b.seatsBooked || 0),
+          0
+        );
+
+        const activeFlightsSet = new Set(
+          all
+            .filter((b) => ["confirmed", "preparing"].includes(b.status))
+            .map((b) => b.flightId?.toString())
+            .filter(Boolean)
+        );
+        const activeFlights = activeFlightsSet.size;
+
+        const now = new Date();
+        const bookingsToday = all.filter((b) =>
+          isSameColomboDay(b.bookingDate, now)
+        ).length;
+
+        const revenue = all
+          .filter((b) => b.status === "confirmed")
+          .reduce((sum, b) => sum + (b.totalAmount || 0), 0);
+
+        setStats([
+          {
+            icon: <Users className="h-8 w-8" />,
+            label: "Total Passengers",
+            value: totalPassengers.toLocaleString(),
+            change: "",
+          },
+          {
+            icon: <Plane className="h-8 w-8" />,
+            label: "Active Flights",
+            value: activeFlights.toString(),
+            change: "",
+          },
+          {
+            icon: <Calendar className="h-8 w-8" />,
+            label: "Bookings Today",
+            value: bookingsToday.toString(),
+            change: "",
+          },
+          {
+            icon: <DollarSign className="h-8 w-8" />,
+            label: "Revenue",
+            value: `$${revenue.toFixed(2)}`,
+            change: "",
+          },
+        ]);
+      } catch (err) {
+        console.error("Error fetching recent bookings:", err);
+        if (err.response?.status === 401 || err.response?.status === 403) {
+          setBookingsError("Unauthorized. Please log in with an admin account.");
+        } else {
+          setBookingsError("Failed to load recent bookings.");
+        }
+      } finally {
+        setLoadingBookings(false);
+      }
+    };
+    fetchRecent();
+  }, [token, BackendUrl]);
+
+  const renderStatusBadge = (status) => {
+    const label = (status || "").toLowerCase();
+    const cfg =
+      label === "confirmed"
+        ? { bg: "bg-green-500/20", text: "text-green-400", display: "Confirmed" }
+        : label === "preparing"
+        ? { bg: "bg-yellow-500/20", text: "text-yellow-400", display: "Preparing" }
+        : label === "cancelled" || label === "declined"
+        ? {
+            bg: "bg-red-500/20",
+            text: "text-red-400",
+            display: label.charAt(0).toUpperCase() + label.slice(1),
+          }
+        : { bg: "bg-gray-500/20", text: "text-gray-400", display: status || "Unknown" };
+    return (
+      <span
+        className={`px-3 py-1 rounded-full text-xs font-medium ${cfg.bg} ${cfg.text}`}
+      >
+        {cfg.display}
+      </span>
+    );
+  };
 
   return (
     <motion.div
@@ -96,9 +210,7 @@ const AdminDashboard = () => {
           className="mb-8"
         >
           <h1 className="text-3xl font-bold mb-2">Admin Dashboard</h1>
-          <p className="text-gray-400">
-            Manage flights, bookings, and passengers
-          </p>
+          <p className="text-gray-400">Manage flights, bookings, and passengers</p>
         </motion.div>
 
         {/* Tabs */}
@@ -144,7 +256,7 @@ const AdminDashboard = () => {
                 </div>
                 <div className="flex items-center text-green-400 text-sm">
                   <TrendingUp className="h-4 w-4 mr-1" />
-                  {stat.change}
+                  {stat.change || "+0%"}
                 </div>
               </div>
               <div className="text-2xl font-bold mb-1">{stat.value}</div>
@@ -163,62 +275,84 @@ const AdminDashboard = () => {
           {activeTab === "overview" && (
             <div>
               <h2 className="text-2xl font-semibold mb-6">Recent Bookings</h2>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-slate-700">
-                      <th className="text-left py-3 px-4 font-medium text-gray-400">
-                        Booking ID
-                      </th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-400">
-                        Passenger
-                      </th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-400">
-                        Route
-                      </th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-400">
-                        Date
-                      </th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-400">
-                        Status
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {recentBookings.map((booking, index) => (
-                      <motion.tr
-                        key={booking.id}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.8 + index * 0.1 }}
-                        className="border-b border-slate-800 hover:bg-slate-800/50 transition-colors"
-                      >
-                        <td className="py-4 px-4 font-mono text-yellow-400">
-                          {booking.id}
-                        </td>
-                        <td className="py-4 px-4">{booking.passenger}</td>
-                        <td className="py-4 px-4">{booking.route}</td>
-                        <td className="py-4 px-4 text-gray-400">
-                          {booking.date}
-                        </td>
-                        <td className="py-4 px-4">
-                          <span
-                            className={`px-3 py-1 rounded-full text-xs font-medium ${
-                              booking.status === "Confirmed"
-                                ? "bg-green-500/20 text-green-400"
-                                : booking.status === "Pending"
-                                ? "bg-yellow-500/20 text-yellow-400"
-                                : "bg-red-500/20 text-red-400"
-                            }`}
+              {loadingBookings ? (
+                <div className="text-center py-8 text-white">
+                  Loading recent bookings...
+                </div>
+              ) : bookingsError ? (
+                <div className="text-center py-8 text-red-400">
+                  {bookingsError}
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-slate-700">
+                        <th className="text-left py-3 px-4 font-medium text-gray-400">
+                          Booking ID
+                        </th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-400">
+                          Passenger
+                        </th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-400">
+                          Route
+                        </th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-400">
+                          Date
+                        </th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-400">
+                          Status
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {recentBookings.map((booking, index) => (
+                        <motion.tr
+                          key={booking._id || booking.bookingId || index}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.8 + index * 0.05 }}
+                          className="border-b border-slate-800 hover:bg-slate-800/50 transition-colors"
+                        >
+                          <td className="py-4 px-4 font-mono text-yellow-400">
+                            #{booking.bookingId ||
+                              (booking._id ? booking._id.slice(-8) : "N/A")}
+                          </td>
+                          <td className="py-4 px-4">
+                            {booking.customerName || "—"}
+                          </td>
+                          <td className="py-4 px-4">
+                            {booking.flightDetails?.departure} →{" "}
+                            {booking.flightDetails?.arrival}
+                          </td>
+                          <td className="py-4 px-4 text-gray-400">
+                            {booking.flightDetails?.date
+                              ? new Date(
+                                  booking.flightDetails.date
+                                ).toLocaleDateString()
+                              : booking.bookingDate
+                              ? new Date(booking.bookingDate).toLocaleDateString()
+                              : "—"}
+                          </td>
+                          <td className="py-4 px-4">
+                            {renderStatusBadge(booking.status)}
+                          </td>
+                        </motion.tr>
+                      ))}
+                      {recentBookings.length === 0 && (
+                        <tr>
+                          <td
+                            colSpan={5}
+                            className="py-6 text-center text-gray-400"
                           >
-                            {booking.status}
-                          </span>
-                        </td>
-                      </motion.tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                            No recent bookings found.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           )}
 
