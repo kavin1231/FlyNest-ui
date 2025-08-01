@@ -11,6 +11,7 @@ import {
 import BookingsPage from "./bookingManagement";
 import Header2 from "../../components/Header2";
 import AdminFlight from "./adminFlight";
+import AdminPassengersPage from "./passengerManagement";
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -235,13 +236,7 @@ const AdminDashboard = () => {
 
           {activeTab === "passengers" && (
             <div className="text-center py-12">
-              <Users className="h-16 w-16 text-gray-600 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2">
-                Passenger Management
-              </h3>
-              <p className="text-gray-400">
-                Passenger information and management interface would go here
-              </p>
+              <AdminPassengersPage />
             </div>
           )}
         </motion.div>

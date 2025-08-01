@@ -16,6 +16,7 @@ import CreateFlight from "../pages/admin/createFlight.jsx";
 import AdminFlight from "../pages/admin/adminFlight.jsx";
 import AboutUsPage from "../pages/home/aboutusPage.jsx";
 import PaymentPage from "../pages/home/payment.jsx";
+import AdminPassengersPage from "../pages/admin/passengerManagement.jsx";
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
             <Route path="/admin/bookings" element={<AdminBookingsPage />} />
             <Route path="/bookings" element={<CustomerBookingsPage />} />
             <Route path="/admin-flights" element={<AdminFlight />} />
+            <Route path="/admin/passengers" element={<AdminPassengersPage />} />
             <Route path="/create-flight" element={<CreateFlight />} />
             <Route path="/about" element={<AboutUsPage />} />
             <Route path="/payment" element={<PaymentPage />} />
