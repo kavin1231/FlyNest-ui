@@ -37,8 +37,12 @@ export default function LoginPage() {
       .then((res) => {
         toast.success("Login successful!");
         const user = res.data.user;
-        localStorage.setItem("token", res.data.token);
 
+        // ✅ Store both token and user
+        localStorage.setItem("token", res.data.token);
+        localStorage.setItem("user", JSON.stringify(user)); // ✅ Added line
+
+        // ✅ Navigate based on role
         if (user.role === "admin") {
           navigate("/admin");
         } else if (user.role === "customer") {
@@ -70,7 +74,7 @@ export default function LoginPage() {
           opacity: 1,
         }}
         transition={{
-          x: { duration: 0 }, // plane enters quickly
+          x: { duration: 0 },
           opacity: { duration: 1.5 },
           rotate: {
             duration: 20,
@@ -86,6 +90,7 @@ export default function LoginPage() {
       />
 
       <div className="absolute inset-0 bg-gradient bg-opacity-100 z-0"></div>
+
       {/* Login Form */}
       <form
         onSubmit={handleSubmit}

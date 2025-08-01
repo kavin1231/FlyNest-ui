@@ -23,7 +23,7 @@ const PaymentForm = ({
   passengers,
   setError,
   setLoading,
-  loading
+  loading,
 }) => {
   const stripe = useStripe();
   const elements = useElements();
@@ -56,7 +56,7 @@ const PaymentForm = ({
       // First, submit the payment element to validate the form
       const { error: submitError } = await elements.submit();
       if (submitError) {
-        console.error('Form submission error:', submitError);
+        console.error("Form submission error:", submitError);
         setError(submitError.message || "Please fill in all payment details.");
         setLoading(false);
         return;
@@ -68,12 +68,13 @@ const PaymentForm = ({
         {
           flightId: flight._id,
           seatsBooked: searchData.seats,
-          passengers: passengers.map(p => ({
+          passengers: passengers.map((p) => ({
             name: `${p.firstName} ${p.lastName}`,
             age: p.age,
-            passportNumber: p.phone
+            passportNumber: p.phone,
           })),
-          customerName: passengers[0]?.firstName + " " + passengers[0]?.lastName,
+          customerName:
+            passengers[0]?.firstName + " " + passengers[0]?.lastName,
           customerAddress: "Customer Address",
           customerPhone: passengers[0]?.phone,
         },
@@ -92,7 +93,7 @@ const PaymentForm = ({
       });
 
       if (error) {
-        console.error('Stripe payment error:', error);
+        console.error("Stripe payment error:", error);
         setError(error.message || "Payment failed. Please try again.");
         setLoading(false);
         return;
@@ -111,20 +112,13 @@ const PaymentForm = ({
           { headers: getAuthHeaders() }
         );
 
-        // Update booking status to confirmed
-        await axios.put(
-          `${BackendUrl}/api/bookings/${booking._id}/status`,
-          { status: "confirmed" },
-          { headers: getAuthHeaders() }
-        );
-
-        // Navigate to confirmation page
+        // Navigate to confirmation WITHOUT updating status
         navigate("/confirmation", {
           state: {
             flight,
             searchData,
             passengers,
-            booking: { ...booking, status: "confirmed" },
+            booking: { ...booking, status: "pending" },
             payment: paymentResponse.data,
             paymentIntentId: paymentIntent.id,
           },
@@ -134,8 +128,8 @@ const PaymentForm = ({
         setLoading(false);
       }
     } catch (err) {
-      console.error('Payment processing error:', err);
-      
+      console.error("Payment processing error:", err);
+
       // More specific error handling
       if (err.response?.status === 401) {
         setError("Please log in to complete your booking.");
@@ -147,8 +141,8 @@ const PaymentForm = ({
       } else {
         setError(
           err.response?.data?.error ||
-          err.message ||
-          "An error occurred while processing your payment. Please try again."
+            err.message ||
+            "An error occurred while processing your payment. Please try again."
         );
       }
       setLoading(false);
@@ -158,10 +152,10 @@ const PaymentForm = ({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="bg-slate-800/30 rounded-lg p-4">
-        <PaymentElement 
+        <PaymentElement
           options={{
             layout: "tabs",
-            paymentMethodOrder: ['card'],
+            paymentMethodOrder: ["card"],
           }}
         />
       </div>
@@ -171,9 +165,7 @@ const PaymentForm = ({
         whileHover={{ scale: !stripe || !elements || loading ? 1 : 1.05 }}
         whileTap={{ scale: !stripe || !elements || loading ? 1 : 0.95 }}
         className={`w-full py-4 gold-gradient text-slate-900 font-semibold rounded-xl hover:shadow-lg transition-shadow text-lg ${
-          !stripe || !elements || loading
-            ? "opacity-50 cursor-not-allowed"
-            : ""
+          !stripe || !elements || loading ? "opacity-50 cursor-not-allowed" : ""
         }`}
       >
         {loading
@@ -223,10 +215,13 @@ const PaymentPage = () => {
     const fetchClientSecret = async () => {
       setLoading(true);
       setError("");
-      
+
       try {
-        console.log('Fetching payment intent for amount:', flight.price * searchData.seats);
-        
+        console.log(
+          "Fetching payment intent for amount:",
+          flight.price * searchData.seats
+        );
+
         const response = await axios.post(
           `${BackendUrl}/api/create-payment-intent`,
           {
@@ -235,20 +230,22 @@ const PaymentPage = () => {
             metadata: {
               flightId: flight._id,
               seats: searchData.seats,
-              passengers: JSON.stringify(passengers.map(p => ({ 
-                name: `${p.firstName} ${p.lastName}`,
-                age: p.age 
-              })))
-            }
+              passengers: JSON.stringify(
+                passengers.map((p) => ({
+                  name: `${p.firstName} ${p.lastName}`,
+                  age: p.age,
+                }))
+              ),
+            },
           },
           { headers: getAuthHeaders() }
         );
-        
-        console.log('Payment intent response:', response.data);
+
+        console.log("Payment intent response:", response.data);
         setClientSecret(response.data.clientSecret);
       } catch (err) {
-        console.error('Error creating payment intent:', err);
-        
+        console.error("Error creating payment intent:", err);
+
         // More specific error handling
         if (err.response?.status === 401) {
           setError("Please log in to continue with payment.");
@@ -258,8 +255,8 @@ const PaymentPage = () => {
         } else {
           setError(
             err.response?.data?.error ||
-            err.message ||
-            "Failed to initialize payment. Please try again."
+              err.message ||
+              "Failed to initialize payment. Please try again."
           );
         }
       } finally {
@@ -298,21 +295,21 @@ const PaymentPage = () => {
   }
 
   const appearance = {
-    theme: 'night',
+    theme: "night",
     variables: {
-      colorPrimary: '#f59e0b',
-      colorBackground: '#1e293b',
-      colorText: '#f1f5f9',
-      colorDanger: '#ef4444',
-      fontFamily: 'system-ui, sans-serif',
-      borderRadius: '8px',
+      colorPrimary: "#f59e0b",
+      colorBackground: "#1e293b",
+      colorText: "#f1f5f9",
+      colorDanger: "#ef4444",
+      fontFamily: "system-ui, sans-serif",
+      borderRadius: "8px",
     },
   };
 
   const options = {
     clientSecret,
     appearance,
-    loader: 'auto',
+    loader: "auto",
   };
 
   return (
@@ -322,7 +319,7 @@ const PaymentPage = () => {
       exit={{ opacity: 0 }}
       className="pt-24 pb-20 px-4 sm:px-6 lg:px-8 min-h-screen"
     >
-        <Header />
+      <Header />
       <div className="max-w-4xl mx-auto">
         <motion.div
           initial={{ y: -50, opacity: 0 }}
@@ -362,7 +359,8 @@ const PaymentPage = () => {
                 {flight.airline} {flight.flightNumber}
               </p>
               <p className="text-gray-400">
-                {flight.departure?.airport || flight.from} → {flight.arrival?.airport || flight.to}
+                {flight.departure?.airport || flight.from} →{" "}
+                {flight.arrival?.airport || flight.to}
               </p>
             </div>
             <div className="text-right">
@@ -375,7 +373,9 @@ const PaymentPage = () => {
 
           {/* Passenger Summary */}
           <div className="border-t border-slate-600 pt-4">
-            <h3 className="text-lg font-medium mb-2">Passengers ({passengers.length})</h3>
+            <h3 className="text-lg font-medium mb-2">
+              Passengers ({passengers.length})
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               {passengers.map((passenger, index) => (
                 <div key={index} className="bg-slate-800/50 rounded-lg p-3">
@@ -402,12 +402,9 @@ const PaymentPage = () => {
             <CreditCard className="h-5 w-5 mr-2" />
             Payment Details
           </h2>
-          
+
           {clientSecret ? (
-            <Elements 
-              stripe={stripePromise} 
-              options={options}
-            >
+            <Elements stripe={stripePromise} options={options}>
               <PaymentForm
                 clientSecret={clientSecret}
                 flight={flight}
