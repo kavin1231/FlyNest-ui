@@ -18,6 +18,7 @@ import AboutUsPage from "../pages/home/aboutusPage.jsx";
 import PaymentPage from "../pages/home/payment.jsx";
 import AdminPassengersPage from "../pages/admin/passengerManagement.jsx";
 import ProfilePage from "../pages/home/profilePage.jsx";
+import UserContactUs from "../pages/home/userContactUs.jsx";
 
 function App() {
   return (
@@ -40,6 +41,7 @@ function App() {
             <Route path="/about" element={<AboutUsPage />} />
             <Route path="/payment" element={<PaymentPage />} />
             <Route path="/profile" element={<ProfilePage/>} />
+            <Route path="/contactus" element={<UserContactUs/>} />
           </Routes>
         </AnimatePresence>
         <Footer />

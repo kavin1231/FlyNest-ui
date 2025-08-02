@@ -12,6 +12,7 @@ import BookingsPage from "./bookingManagement";
 import Header2 from "../../components/Header2";
 import AdminFlight from "./adminFlight";
 import AdminPassengersPage from "./passengerManagement";
+import AdminContactUs from "./adminContactUs";
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -51,6 +52,7 @@ const AdminDashboard = () => {
     { id: "bookings", label: "Bookings" },
     { id: "flights", label: "Flights" },
     { id: "passengers", label: "Passengers" },
+    { id: "contact us", label: "Contact Us" },
   ];
 
   const token = localStorage.getItem("token");
@@ -371,6 +373,11 @@ const AdminDashboard = () => {
           {activeTab === "passengers" && (
             <div className="text-center py-12">
               <AdminPassengersPage />
+            </div>
+          )}
+          {activeTab === "contact us" && (
+            <div className="text-center py-12">
+              <AdminContactUs />
             </div>
           )}
         </motion.div>

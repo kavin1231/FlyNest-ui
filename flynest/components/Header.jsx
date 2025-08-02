@@ -3,20 +3,40 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Menu, X, User } from "lucide-react";
 
+// Consistent token accessor using localStorage (matches your booking system)
+const getToken = () => {
+  return localStorage.getItem("token");
+};
+
+// Get user data from localStorage
+const getUser = () => {
+  try {
+    const userStr = localStorage.getItem("user");
+    return userStr ? JSON.parse(userStr) : null;
+  } catch (error) {
+    console.error("Error parsing user data:", error);
+    return null;
+  }
+};
+
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(
-    () => !!localStorage.getItem("token")
-  );
+  const [isLoggedIn, setIsLoggedIn] = useState(() => !!getToken());
+  const [user, setUser] = useState(() => getUser());
   const location = useLocation();
   const navigate = useNavigate();
 
-  // All nav items
-  const allNavItems = [
+  // Check if user is admin
+  const isAdmin = user && user.role === "admin";
+
+  // All nav items for logged-in users
+  const loggedInNavItems = [
     { name: "Home", path: "/home" },
     { name: "Flights", path: "/flights" },
     { name: "About", path: "/about" },
     { name: "Bookings", path: "/bookings" },
+    // Add admin-only navigation
+    ...(isAdmin ? [{ name: "Admin Panel", path: "/admin" }] : []),
   ];
 
   // Public nav items when not logged in
@@ -26,17 +46,57 @@ const Header = () => {
   ];
 
   // Choose nav items based on login status
-  const navItems = isLoggedIn ? allNavItems : guestNavItems;
+  const navItems = isLoggedIn ? loggedInNavItems : guestNavItems;
 
+  // Update login state and user data when route changes
   useEffect(() => {
-    setIsLoggedIn(!!localStorage.getItem("token"));
+    const token = getToken();
+    const userData = getUser();
+    
+    setIsLoggedIn(!!token);
+    setUser(userData);
+    
+    console.log("Header auth check:", { 
+      token: !!token, 
+      user: userData, 
+      isAdmin: userData?.role === "admin" 
+    });
   }, [location]);
 
+  // Listen for storage changes (useful if user logs in/out in another tab)
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === "token" || e.key === "user") {
+        const token = getToken();
+        const userData = getUser();
+        setIsLoggedIn(!!token);
+        setUser(userData);
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
+
   const handleLogout = () => {
+    // Clear all auth data
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    
     setIsLoggedIn(false);
+    setUser(null);
     setIsMenuOpen(false);
     navigate("/");
+  };
+
+  const handleProfileClick = () => {
+    if (isLoggedIn) {
+      // Navigate to profile page
+      navigate("/profile");
+    } else {
+      // Navigate to login page
+      navigate("/");
+    }
   };
 
   return (
@@ -92,18 +152,28 @@ const Header = () => {
 
           {/* User Actions */}
           <div className="hidden md:flex items-center space-x-4">
+            {/* User info when logged in */}
+            {isLoggedIn && user && (
+              <div className="text-gray-300 text-sm">
+                Welcome, {user.firstname || user.name || "User"}
+                {isAdmin && (
+                  <span className="ml-2 px-2 py-1 bg-yellow-500 text-black text-xs rounded-full">
+                    Admin
+                  </span>
+                )}
+              </div>
+            )}
+            
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => {
-                if (isLoggedIn) navigate("/profile");
-                else navigate("/");
-              }}
+              onClick={handleProfileClick}
               aria-label="Profile"
               className="p-2 text-gray-300 hover:text-white transition-colors"
             >
               <User className="h-5 w-5" />
             </motion.button>
+            
             {isLoggedIn ? (
               <motion.button
                 whileHover={{ scale: 1.05 }}
@@ -148,17 +218,46 @@ const Header = () => {
           className="md:hidden overflow-hidden"
         >
           <div className="py-4 space-y-4">
+            {/* User info in mobile menu */}
+            {isLoggedIn && user && (
+              <div className="px-3 py-2 text-gray-300 text-sm border-b border-gray-700">
+                Welcome, {user.firstname || user.name || "User"}
+                {isAdmin && (
+                  <span className="ml-2 px-2 py-1 bg-yellow-500 text-black text-xs rounded-full">
+                    Admin
+                  </span>
+                )}
+              </div>
+            )}
+            
             {navItems.map((item) => (
               <Link
                 key={item.name}
                 to={item.path}
-                className="block px-3 py-2 text-gray-300 hover:text-white transition-colors"
+                className={`block px-3 py-2 transition-colors ${
+                  location.pathname === item.path
+                    ? "text-yellow-400"
+                    : "text-gray-300 hover:text-white"
+                }`}
                 onClick={() => setIsMenuOpen(false)}
               >
                 {item.name}
               </Link>
             ))}
-            <div className="pt-4 border-t border-gray-700">
+            
+            <div className="pt-4 border-t border-gray-700 space-y-2">
+              {isLoggedIn && (
+                <button
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    navigate("/profile");
+                  }}
+                  className="w-full px-6 py-3 bg-gray-700 text-white font-semibold rounded-full mb-2"
+                >
+                  Profile
+                </button>
+              )}
+              
               {isLoggedIn ? (
                 <button
                   onClick={handleLogout}
