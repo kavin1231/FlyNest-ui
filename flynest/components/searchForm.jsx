@@ -1,10 +1,10 @@
-import axios from "axios";
-
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom"; // Add this import
 import { MapPin, Users, Calendar, Search } from "lucide-react";
 
 const FlightSearchUI = () => {
-  const BackendUrl = import.meta.env.VITE_BACKEND_URL; // ✅ Must be here
+  const BackendUrl = import.meta.env.VITE_BACKEND_URL;
+  const navigate = useNavigate(); // Add this hook
 
   const [formData, setFormData] = useState({
     from: "",
@@ -15,20 +15,36 @@ const FlightSearchUI = () => {
     class: "Economy",
   });
 
-  // ... rest of the code
-
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const airports = [
-    { code: "LAX", name: "Los Angeles", city: "Los Angeles, CA" },
-    { code: "DXB", name: "Dubai International", city: "Dubai, UAE" },
-    { code: "JFK", name: "John F. Kennedy", city: "New York, NY" },
-    { code: "LHR", name: "Heathrow", city: "London, UK" },
-    { code: "NRT", name: "Narita", city: "Tokyo, Japan" },
-    { code: "CDG", name: "Charles de Gaulle", city: "Paris, France" },
+    { code: "SRILANKA", name: "Bandaranaike International", city: "Sri Lanka" },
+    { code: "INDIA", name: "Indira Gandhi International", city: "India" },
+    { code: "DUBAI", name: "Dubai International", city: "Dubai" },
+    { code: "LONDON", name: "Heathrow", city: "London" },
+    { code: "JAPAN", name: "Narita", city: "Japan" },
+    { code: "FRANCE", name: "Charles de Gaulle", city: "France" },
+    {
+      code: "LOS ANGELES",
+      name: "Los Angeles International",
+      city: "Los Angeles",
+    },
+    { code: "NEW YORK", name: "John F. Kennedy", city: "New York" },
+    { code: "QATAR", name: "Hamad International", city: "Qatar" },
   ];
+
+  // Add this function to handle booking navigation
+  const handleBookNow = (flight) => {
+    // Navigate to bookings page with flight data as state
+    navigate('/passengers', {
+      state: {
+        flight: flight,
+        searchData: formData
+      }
+    });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -38,50 +54,85 @@ const FlightSearchUI = () => {
       return;
     }
 
+    if (formData.from === formData.to) {
+      setError("Departure and arrival destinations cannot be the same");
+      return;
+    }
+
     setLoading(true);
     setError("");
 
     try {
-      const response = await axios.get(`${BackendUrl}/api/flights`, {
+      const params = new URLSearchParams({
+        from: formData.from,
+        to: formData.to,
+        date: formData.departure,
+      });
+
+      console.log("Search URL:", `${BackendUrl}/api/flights?${params}`);
+
+      const response = await fetch(`${BackendUrl}/api/flights?${params}`, {
+        method: "GET",
         headers: {
           "Content-Type": "application/json",
         },
       });
 
-      const allFlights = response.data;
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
-      console.log("All Flights:", allFlights);
-      console.log("Search Criteria:", formData);
+      const flights = await response.json();
+      console.log("Search Results:", flights);
 
-      const filteredFlights = allFlights.filter((flight) => {
-        const matchesFrom = flight.departure
-          .toLowerCase()
-          .includes(formData.from.toLowerCase());
-        const matchesTo = flight.arrival
-          .toLowerCase()
-          .includes(formData.to.toLowerCase());
-        const matchesDate = flight.date.slice(0, 10) === formData.departure;
+      setSearchResults(flights);
 
-        console.log(`Flight ${flight.flightNumber}`, {
-          matchesFrom,
-          matchesTo,
-          matchesDate,
-          flightDate: flight.date,
-        });
-
-        return matchesFrom && matchesTo && matchesDate;
-      });
-
-      setSearchResults(filteredFlights);
-
-      if (filteredFlights.length === 0) {
-        setError("No flights found for your search criteria");
+      if (flights.length === 0) {
+        setError(
+          "No flights found for your search criteria. Please try different dates or destinations."
+        );
       }
     } catch (err) {
-      setError("Error searching flights: " + err.message);
       console.error("Flight search error:", err);
+
+      // Better error handling
+      if (err.name === "TypeError" && err.message.includes("fetch")) {
+        setError(
+          "Unable to connect to the server. Please check your internet connection."
+        );
+      } else {
+        setError(`Search failed: ${err.message}`);
+      }
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Helper function to format date for display
+  const formatDate = (dateString) => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+    } catch {
+      return dateString;
+    }
+  };
+
+  // Helper function to format time
+  const formatTime = (timeString) => {
+    try {
+      const date = new Date(timeString);
+      return date.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      });
+    } catch {
+      return timeString;
     }
   };
 
@@ -108,6 +159,7 @@ const FlightSearchUI = () => {
           }
         }
       `}</style>
+
       {/* Your Original Search Form */}
       <section className="relative -mt-32 z-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
@@ -145,6 +197,7 @@ const FlightSearchUI = () => {
                       setFormData({ ...formData, from: e.target.value })
                     }
                     className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                    required
                   >
                     <option value="">Select departure</option>
                     {airports.map((airport) => (
@@ -167,6 +220,7 @@ const FlightSearchUI = () => {
                       setFormData({ ...formData, to: e.target.value })
                     }
                     className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                    required
                   >
                     <option value="">Select destination</option>
                     {airports.map((airport) => (
@@ -189,7 +243,9 @@ const FlightSearchUI = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, departure: e.target.value })
                     }
+                    min={new Date().toISOString().split("T")[0]} // Prevent past dates
                     className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                    required
                   />
                 </div>
 
@@ -205,6 +261,10 @@ const FlightSearchUI = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, return: e.target.value })
                     }
+                    min={
+                      formData.departure ||
+                      new Date().toISOString().split("T")[0]
+                    } // Must be after departure
                     className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-yellow-400"
                   />
                 </div>
@@ -276,18 +336,21 @@ const FlightSearchUI = () => {
                         {flight.airline || "Airline"}
                       </h3>
                       <p className="text-gray-300">{flight.flightNumber}</p>
+                      <p className="text-sm text-gray-400 mt-1">
+                        {formatDate(flight.date)}
+                      </p>
                     </div>
 
                     <div className="text-center">
                       <p className="text-2xl font-bold text-white">
-                        {flight.departureTime}
+                        {formatTime(flight.departureTime)}
                       </p>
                       <p className="text-gray-300">{flight.departure}</p>
                     </div>
 
                     <div className="text-center">
                       <p className="text-2xl font-bold text-white">
-                        {flight.arrivalTime}
+                        {formatTime(flight.arrivalTime)}
                       </p>
                       <p className="text-gray-300">{flight.arrival}</p>
                     </div>
@@ -299,7 +362,10 @@ const FlightSearchUI = () => {
                       <p className="text-gray-300 mb-4">
                         {flight.availableSeats} seats left
                       </p>
-                      <button className="px-6 py-2 gold-gradient text-slate-900 font-semibold rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105">
+                      <button 
+                        onClick={() => handleBookNow(flight)}
+                        className="px-6 py-2 gold-gradient text-slate-900 font-semibold rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+                      >
                         Book Now
                       </button>
                     </div>

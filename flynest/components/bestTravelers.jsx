@@ -4,10 +4,10 @@ import { motion } from 'framer-motion';
 const BestTravelers = () => {
   const travelers = [
     {
-      name: 'William Liam',
-      location: 'Stockholm, Jam',
-      image: 'https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=400',
-      destination: 'https://images.pexels.com/photos/161401/fushimi-inari-taisha-shrine-kyoto-japan-161401.jpeg?auto=compress&cs=tinysrgb&w=400',
+      name: 'Kavin Fernando',
+      location: 'Dubai, UAE',
+      image: '/ceo photo.jpg',
+      destination: 'https://www.touristiknews.de/wp-content/uploads/2022/09/Hilton-Dubai-Palm-Jumeirah-Beach-scaled.jpg',
     },
     {
       name: 'James Noah',
