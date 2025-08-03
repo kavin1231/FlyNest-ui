@@ -3,8 +3,8 @@ import { motion } from "framer-motion";
 import { useLocation, useNavigate } from "react-router-dom";
 import { User, Mail, Phone, Calendar, Users } from "lucide-react";
 import axios from "axios";
-import LoadingSpinner from "../../components/LoadingSpinner";
-import Header from "../../components/Header";
+import LoadingSpinner from "../../components/LoadingSpinner.jsx";
+import Header from "../../components/Header.jsx";
 
 const PassengerDetails = () => {
   const location = useLocation();

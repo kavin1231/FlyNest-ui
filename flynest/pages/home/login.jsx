@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { motion } from "framer-motion";
-import Header from "../../components/Header";
+import Header from "../../components/Header.jsx";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");

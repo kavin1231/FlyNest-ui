@@ -18,8 +18,8 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import Header from "../../components/Header";
-import mediaUpload from "../../utils/mediaUpload";
+import Header from "../../components/Header.jsx";
+import mediaUpload from "../../utils/mediaUpload.jsx";
 
 const BackendUrl = import.meta.env.VITE_BACKEND_URL;
 

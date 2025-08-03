@@ -14,7 +14,7 @@ import {
   Calendar,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import Header from "../../components/Header";
+import Header from "../../components/Header.jsx";
 
 const UserContactUs = () => {
   const [formData, setFormData] = useState({
