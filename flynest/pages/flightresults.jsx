@@ -3,9 +3,9 @@ import { motion } from "framer-motion";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Filter, Plane, Calendar, Clock, ArrowLeft } from "lucide-react";
 import axios from "axios";
-import FlightCard from "../components/FlightCard";
+import FlightCard from "../components/flightCard.jsx";
 import LoadingSpinner from "../components/LoadingSpinner";
-import Header from "../components/Header";
+import Header from "../components/Header.jsx";
 
 const FlightResults = () => {
   const navigate = useNavigate();
@@ -52,7 +52,10 @@ const FlightResults = () => {
           });
           console.log("Customer endpoint success:", res.data);
         } catch (customerError) {
-          console.log("Customer endpoint failed:", customerError.response?.status || customerError.message);
+          console.log(
+            "Customer endpoint failed:",
+            customerError.response?.status || customerError.message
+          );
           console.log("Trying public search endpoint...");
           try {
             // Fallback to public search endpoint (no filters)
@@ -61,7 +64,10 @@ const FlightResults = () => {
             });
             console.log("Public endpoint success:", res.data);
           } catch (publicError) {
-            console.log("Public endpoint failed:", publicError.response?.status || publicError.message);
+            console.log(
+              "Public endpoint failed:",
+              publicError.response?.status || publicError.message
+            );
             throw publicError; // Re-throw the last error
           }
         }
@@ -187,7 +193,7 @@ const FlightResults = () => {
 
   const handleViewAllFlights = () => {
     // Clear the location state and reload to show all flights
-    navigate('/flight-results', { replace: true });
+    navigate("/flight-results", { replace: true });
     window.location.reload();
   };
 
@@ -239,20 +245,19 @@ const FlightResults = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-4xl font-bold text-yellow-400 mb-4">
-                {fromSearch && selectedFlight 
-                  ? "Your Selected Flight" 
-                  : "All Available Flights"
-                }
+                {fromSearch && selectedFlight
+                  ? "Your Selected Flight"
+                  : "All Available Flights"}
               </h1>
               <p className="text-gray-300 text-lg">
                 {fromSearch && selectedFlight
                   ? "Review your flight selection and proceed to booking"
-                  : "Browse all flights and book your next journey"
-                }
+                  : "Browse all flights and book your next journey"}
               </p>
               {fromSearch && searchData && (
                 <div className="mt-4 text-sm text-gray-400">
-                  Search: {searchData.from} → {searchData.to} | {searchData.departure}
+                  Search: {searchData.from} → {searchData.to} |{" "}
+                  {searchData.departure}
                 </div>
               )}
             </div>
@@ -268,7 +273,7 @@ const FlightResults = () => {
                   Back to Search
                 </button>
               )}
-              
+
               {fromSearch && selectedFlight && (
                 <button
                   onClick={handleViewAllFlights}
