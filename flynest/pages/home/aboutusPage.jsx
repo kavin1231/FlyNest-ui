@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { motion, useInView } from "framer-motion";
+import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { 
   Plane, 
   Shield, 
@@ -7,23 +8,19 @@ import {
   Users, 
   Globe, 
   Star,
-  MapPin,
-  Phone,
-  Mail,
-  Award,
-  TrendingUp,
-  Heart,
-  CheckCircle,
-  Zap,
-  Target,
   Eye,
-  Coffee
+  Coffee,
+  Target,
+  Zap,
+  Heart
 } from "lucide-react";
 import Header from "../../components/Header";
 
 const AboutUsPage = () => {
   const [activeTab, setActiveTab] = useState("mission");
   const [counter, setCounter] = useState({ flights: 0, customers: 0, destinations: 0, satisfaction: 0 });
+  const navigate = useNavigate();
+  const whoWeAreRef = useRef(null);
 
   // Counter animation
   useEffect(() => {
@@ -37,7 +34,7 @@ const AboutUsPage = () => {
       const interval = setInterval(() => {
         currentStep++;
         const progress = currentStep / steps;
-        
+
         setCounter({
           flights: Math.floor(targets.flights * progress),
           customers: Math.floor(targets.customers * progress),
@@ -57,6 +54,12 @@ const AboutUsPage = () => {
     const timer = setTimeout(animateCounter, 500);
     return () => clearTimeout(timer);
   }, []);
+
+  const scrollToWhoWeAre = () => {
+    if (whoWeAreRef.current) {
+      whoWeAreRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -124,7 +127,7 @@ const AboutUsPage = () => {
     {
       name: "Kavindra Fernando",
       role: "CEO & Founder",
-      image: "https://images.unsplash.com/photo-1494790108755-2616b612b766?w=400&h=400&fit=crop&crop=face",
+      image: "/ceo photo.jpg",
       bio: "Aviation industry veteran with 15+ years of experience"
     },
     {
@@ -214,10 +217,16 @@ const AboutUsPage = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
           >
-            <button className="px-8 py-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-slate-900 font-semibold rounded-full hover:shadow-lg hover:shadow-yellow-400/25 transition-all duration-300 transform hover:scale-105">
+            <button
+              onClick={scrollToWhoWeAre}
+              className="px-8 py-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-slate-900 font-semibold rounded-full hover:shadow-lg hover:shadow-yellow-400/25 transition-all duration-300 transform hover:scale-105"
+            >
               Learn More
             </button>
-            <button className="px-8 py-3 border border-white/20 text-white font-semibold rounded-full hover:bg-white/10 transition-all duration-300">
+            <button
+              onClick={() => navigate("/contactus")}
+              className="px-8 py-3 border border-white/20 text-white font-semibold rounded-full hover:bg-white/10 transition-all duration-300"
+            >
               Contact Us
             </button>
           </motion.div>
@@ -254,7 +263,7 @@ const AboutUsPage = () => {
       </section>
 
       {/* Mission, Vision, Values */}
-      <section className="py-20 bg-slate-800/50">
+      <section className="py-20 bg-slate-800/50" ref={whoWeAreRef}>
         <div className="max-w-6xl mx-auto px-6">
           <motion.h2
             className="text-4xl md:text-5xl font-bold text-center mb-12"
@@ -413,10 +422,16 @@ const AboutUsPage = () => {
             viewport={{ once: true }}
             transition={{ delay: 0.4 }}
           >
-            <button className="px-8 py-4 bg-gradient-to-r from-yellow-400 to-orange-500 text-slate-900 font-bold rounded-full hover:shadow-lg hover:shadow-yellow-400/25 transition-all duration-300 transform hover:scale-105">
+            <button
+              onClick={() => navigate("/booking")}
+              className="px-8 py-4 bg-gradient-to-r from-yellow-400 to-orange-500 text-slate-900 font-bold rounded-full hover:shadow-lg hover:shadow-yellow-400/25 transition-all duration-300 transform hover:scale-105"
+            >
               Start Booking Now
             </button>
-            <button className="px-8 py-4 border border-white/20 text-white font-semibold rounded-full hover:bg-white/10 transition-all duration-300">
+            <button
+              onClick={() => navigate("/contact")}
+              className="px-8 py-4 border border-white/20 text-white font-semibold rounded-full hover:bg-white/10 transition-all duration-300"
+            >
               Contact Support
             </button>
           </motion.div>
