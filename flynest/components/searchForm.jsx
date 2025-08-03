@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom"; // Add this import
+import { useNavigate } from "react-router-dom";
 import { MapPin, Users, Calendar, Search } from "lucide-react";
 
 const FlightSearchUI = () => {
   const BackendUrl = import.meta.env.VITE_BACKEND_URL;
-  const navigate = useNavigate(); // Add this hook
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     from: "",
@@ -35,13 +35,14 @@ const FlightSearchUI = () => {
     { code: "QATAR", name: "Hamad International", city: "Qatar" },
   ];
 
-  // Add this function to handle booking navigation
+  // Modified function to handle booking navigation
   const handleBookNow = (flight) => {
-    // Navigate to bookings page with flight data as state
-    navigate('/passengers', {
+    // Navigate to flight results page with the selected flight and search data
+    navigate('/flights', {
       state: {
-        flight: flight,
-        searchData: formData
+        selectedFlight: flight,
+        searchData: formData,
+        fromSearch: true
       }
     });
   };

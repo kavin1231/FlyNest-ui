@@ -35,6 +35,7 @@ const Header = () => {
     { name: "Flights", path: "/flights" },
     { name: "About", path: "/about" },
     { name: "Bookings", path: "/bookings" },
+    { name: "Airlines", path: "/airlines" },
     // Add admin-only navigation
     ...(isAdmin ? [{ name: "Admin Panel", path: "/admin" }] : []),
   ];

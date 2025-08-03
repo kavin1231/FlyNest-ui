@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
-import { Filter, Plane, Calendar, Clock } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { Filter, Plane, Calendar, Clock, ArrowLeft } from "lucide-react";
 import axios from "axios";
 import FlightCard from "../components/FlightCard";
 import LoadingSpinner from "../components/LoadingSpinner";
@@ -9,6 +9,7 @@ import Header from "../components/Header";
 
 const FlightResults = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [loading, setLoading] = useState(true);
   const [flights, setFlights] = useState([]);
   const [error, setError] = useState("");
@@ -18,7 +19,20 @@ const FlightResults = () => {
     timeRange: "all", // all, morning, afternoon, evening
   });
 
+  // Check if user came from search with a selected flight
+  const { selectedFlight, searchData, fromSearch } = location.state || {};
+
   useEffect(() => {
+    // If user came from search with a selected flight, show only that flight
+    if (fromSearch && selectedFlight) {
+      console.log("Showing selected flight from search:", selectedFlight);
+      setFlights([selectedFlight]);
+      setFilteredFlights([selectedFlight]);
+      setLoading(false);
+      return;
+    }
+
+    // Otherwise, fetch all flights
     const fetchAllFlights = async () => {
       try {
         setLoading(true);
@@ -81,10 +95,15 @@ const FlightResults = () => {
     };
 
     fetchAllFlights();
-  }, []); // Empty dependency array - fetch once on component mount
+  }, [fromSearch, selectedFlight]);
 
-  // Apply filters and sorting
+  // Apply filters and sorting (only if not showing a specific selected flight)
   useEffect(() => {
+    if (fromSearch && selectedFlight) {
+      // Don't apply filters when showing a specific selected flight
+      return;
+    }
+
     let filtered = [...flights];
 
     // Time range filter
@@ -148,7 +167,7 @@ const FlightResults = () => {
     });
 
     setFilteredFlights(filtered);
-  }, [flights, filters]);
+  }, [flights, filters, fromSearch, selectedFlight]);
 
   const handleSelectFlight = (flight) => {
     console.log("Selected flight:", flight);
@@ -160,6 +179,16 @@ const FlightResults = () => {
       ...prev,
       [filterType]: value,
     }));
+  };
+
+  const handleBackToSearch = () => {
+    navigate(-1); // Go back to previous page
+  };
+
+  const handleViewAllFlights = () => {
+    // Clear the location state and reload to show all flights
+    navigate('/flight-results', { replace: true });
+    window.location.reload();
   };
 
   if (loading) {
@@ -207,68 +236,107 @@ const FlightResults = () => {
           transition={{ duration: 0.6 }}
           className="mb-8"
         >
-          <h1 className="text-4xl font-bold text-yellow-400 mb-4">
-            All Available Flights
-          </h1>
-          <p className="text-gray-300 text-lg">
-            Browse all flights and book your next journey
-          </p>
-        </motion.div>
-
-        {/* Filters and Sorting */}
-        <motion.div
-          initial={{ y: 50, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.3, duration: 0.6 }}
-          className="mb-8 bg-slate-800/40 backdrop-blur border border-slate-600 rounded-2xl p-6"
-        >
-          <div className="flex flex-wrap gap-4 items-center justify-between">
-            <div className="flex flex-wrap gap-4 items-center">
-              {/* Sort By */}
-              <select
-                value={filters.sortBy}
-                onChange={(e) => handleFilterChange("sortBy", e.target.value)}
-                className="px-4 py-2 bg-slate-700 rounded-full text-white border border-slate-600 hover:bg-slate-600 transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-400"
-              >
-                <option value="price">Sort by Price</option>
-                <option value="departure">Sort by Departure</option>
-                <option value="duration">Sort by Duration</option>
-              </select>
-
-              {/* Time Range */}
-              <select
-                value={filters.timeRange}
-                onChange={(e) =>
-                  handleFilterChange("timeRange", e.target.value)
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-4xl font-bold text-yellow-400 mb-4">
+                {fromSearch && selectedFlight 
+                  ? "Your Selected Flight" 
+                  : "All Available Flights"
                 }
-                className="px-4 py-2 bg-slate-700 rounded-full text-white border border-slate-600 hover:bg-slate-600 transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-400"
-              >
-                <option value="all">All Times</option>
-                <option value="morning">Morning (6AM - 12PM)</option>
-                <option value="afternoon">Afternoon (12PM - 6PM)</option>
-                <option value="evening">Evening (6PM - 6AM)</option>
-              </select>
-
-              {/* Clear Filters */}
-              <button
-                onClick={() =>
-                  setFilters({
-                    sortBy: "price",
-                    timeRange: "all",
-                  })
+              </h1>
+              <p className="text-gray-300 text-lg">
+                {fromSearch && selectedFlight
+                  ? "Review your flight selection and proceed to booking"
+                  : "Browse all flights and book your next journey"
                 }
-                className="px-4 py-2 bg-slate-700 rounded-full hover:bg-slate-600 transition-colors text-sm"
-              >
-                Reset Filters
-              </button>
+              </p>
+              {fromSearch && searchData && (
+                <div className="mt-4 text-sm text-gray-400">
+                  Search: {searchData.from} → {searchData.to} | {searchData.departure}
+                </div>
+              )}
             </div>
 
-            <div className="text-sm text-gray-400">
-              {filteredFlights.length} flight
-              {filteredFlights.length !== 1 ? "s" : ""} available
+            {/* Action buttons */}
+            <div className="flex gap-4">
+              {fromSearch && selectedFlight && (
+                <button
+                  onClick={handleBackToSearch}
+                  className="flex items-center px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-xl text-white transition-colors"
+                >
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Back to Search
+                </button>
+              )}
+              
+              {fromSearch && selectedFlight && (
+                <button
+                  onClick={handleViewAllFlights}
+                  className="px-4 py-2 bg-yellow-500 hover:bg-yellow-400 text-black font-semibold rounded-xl transition-colors"
+                >
+                  View All Flights
+                </button>
+              )}
             </div>
           </div>
         </motion.div>
+
+        {/* Filters and Sorting - Only show if not displaying a specific selected flight */}
+        {!(fromSearch && selectedFlight) && (
+          <motion.div
+            initial={{ y: 50, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.3, duration: 0.6 }}
+            className="mb-8 bg-slate-800/40 backdrop-blur border border-slate-600 rounded-2xl p-6"
+          >
+            <div className="flex flex-wrap gap-4 items-center justify-between">
+              <div className="flex flex-wrap gap-4 items-center">
+                {/* Sort By */}
+                <select
+                  value={filters.sortBy}
+                  onChange={(e) => handleFilterChange("sortBy", e.target.value)}
+                  className="px-4 py-2 bg-slate-700 rounded-full text-white border border-slate-600 hover:bg-slate-600 transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                >
+                  <option value="price">Sort by Price</option>
+                  <option value="departure">Sort by Departure</option>
+                  <option value="duration">Sort by Duration</option>
+                </select>
+
+                {/* Time Range */}
+                <select
+                  value={filters.timeRange}
+                  onChange={(e) =>
+                    handleFilterChange("timeRange", e.target.value)
+                  }
+                  className="px-4 py-2 bg-slate-700 rounded-full text-white border border-slate-600 hover:bg-slate-600 transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                >
+                  <option value="all">All Times</option>
+                  <option value="morning">Morning (6AM - 12PM)</option>
+                  <option value="afternoon">Afternoon (12PM - 6PM)</option>
+                  <option value="evening">Evening (6PM - 6AM)</option>
+                </select>
+
+                {/* Clear Filters */}
+                <button
+                  onClick={() =>
+                    setFilters({
+                      sortBy: "price",
+                      timeRange: "all",
+                    })
+                  }
+                  className="px-4 py-2 bg-slate-700 rounded-full hover:bg-slate-600 transition-colors text-sm"
+                >
+                  Reset Filters
+                </button>
+              </div>
+
+              <div className="text-sm text-gray-400">
+                {filteredFlights.length} flight
+                {filteredFlights.length !== 1 ? "s" : ""} available
+              </div>
+            </div>
+          </motion.div>
+        )}
 
         {/* Flight Results */}
         {filteredFlights.length > 0 ? (
@@ -283,6 +351,7 @@ const FlightResults = () => {
                 <FlightCard
                   flight={flight}
                   onSelect={() => handleSelectFlight(flight)}
+                  isSelected={fromSearch && selectedFlight}
                 />
               </motion.div>
             ))}
