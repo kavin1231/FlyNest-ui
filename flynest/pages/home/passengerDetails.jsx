@@ -25,70 +25,77 @@ const PassengerDetails = () => {
       let flightData = null;
       let searchInfo = null;
 
-      console.log('Loading flight data...');
-      console.log('Location state:', location.state);
+      console.log("Loading flight data...");
+      console.log("Location state:", location.state);
 
       // Method 1: Try location state first
       if (location.state?.selectedFlight) {
         flightData = location.state.selectedFlight;
         searchInfo = location.state.searchData || location.state.searchInfo;
-        console.log('Data loaded from location.state (selectedFlight):', { flightData, searchInfo });
-      } 
-      else if (location.state?.flight) {
+        console.log("Data loaded from location.state (selectedFlight):", {
+          flightData,
+          searchInfo,
+        });
+      } else if (location.state?.flight) {
         flightData = location.state.flight;
         searchInfo = location.state.searchData;
-        console.log('Data loaded from location.state (flight):', { flightData, searchInfo });
+        console.log("Data loaded from location.state (flight):", {
+          flightData,
+          searchInfo,
+        });
       }
 
       // Method 2: Try sessionStorage
       if (!flightData) {
         try {
-          const storedFlight = sessionStorage.getItem('selectedFlight');
-          const storedSearch = sessionStorage.getItem('searchData');
-          
+          const storedFlight = sessionStorage.getItem("selectedFlight");
+          const storedSearch = sessionStorage.getItem("searchData");
+
           if (storedFlight) {
             flightData = JSON.parse(storedFlight);
-            console.log('Flight data loaded from sessionStorage');
+            console.log("Flight data loaded from sessionStorage");
           }
           if (storedSearch) {
             searchInfo = JSON.parse(storedSearch);
-            console.log('Search data loaded from sessionStorage');
+            console.log("Search data loaded from sessionStorage");
           }
         } catch (error) {
-          console.error('Error parsing sessionStorage data:', error);
+          console.error("Error parsing sessionStorage data:", error);
         }
       }
 
       // Method 3: Try localStorage as fallback
       if (!flightData) {
         try {
-          const storedFlight = localStorage.getItem('selectedFlight');
-          const storedSearch = localStorage.getItem('searchData');
-          
+          const storedFlight = localStorage.getItem("selectedFlight");
+          const storedSearch = localStorage.getItem("searchData");
+
           if (storedFlight) {
             flightData = JSON.parse(storedFlight);
-            console.log('Flight data loaded from localStorage');
+            console.log("Flight data loaded from localStorage");
           }
           if (storedSearch) {
             searchInfo = JSON.parse(storedSearch);
-            console.log('Search data loaded from localStorage');
+            console.log("Search data loaded from localStorage");
           }
         } catch (error) {
-          console.error('Error parsing localStorage data:', error);
+          console.error("Error parsing localStorage data:", error);
         }
       }
 
       // Method 4: Try to get flight by ID from URL params
       const urlParams = new URLSearchParams(location.search);
-      const flightId = urlParams.get('flightId');
-      
+      const flightId = urlParams.get("flightId");
+
       if (!flightData && flightId) {
         try {
-          console.log('Fetching flight by ID:', flightId);
-          const response = await axios.get(`${BackendUrl}/api/flights/${flightId}`);
+          console.log("Fetching flight by ID:", flightId);
+          const response = await axios.get(
+            `${BackendUrl}/api/flights/${flightId}`
+          );
           flightData = response.data;
-          console.log('Flight data loaded from API:', flightData);
-          
+          console.log("Flight data loaded from API:", flightData);
+
           // Create default search info if not available
           if (!searchInfo) {
             searchInfo = {
@@ -97,17 +104,17 @@ const PassengerDetails = () => {
               from: flightData.departure,
               to: flightData.arrival,
               date: flightData.date,
-              class: 'Economy'
+              class: "Economy",
             };
           }
         } catch (error) {
-          console.error('Error fetching flight by ID:', error);
+          console.error("Error fetching flight by ID:", error);
         }
       }
 
       if (flightData) {
         setFlight(flightData);
-        
+
         // If no search data, create default
         if (!searchInfo) {
           searchInfo = {
@@ -116,20 +123,20 @@ const PassengerDetails = () => {
             from: flightData.departure,
             to: flightData.arrival,
             date: flightData.date,
-            class: 'Economy'
+            class: "Economy",
           };
         }
-        
+
         setSearchData(searchInfo);
-        
+
         // Store in both sessionStorage and localStorage for persistence
-        sessionStorage.setItem('selectedFlight', JSON.stringify(flightData));
-        sessionStorage.setItem('searchData', JSON.stringify(searchInfo));
-        
+        sessionStorage.setItem("selectedFlight", JSON.stringify(flightData));
+        sessionStorage.setItem("searchData", JSON.stringify(searchInfo));
+
         // Initialize passengers array
         const seatsCount = searchInfo?.seats || searchInfo?.passengers || 1;
-        console.log('Initializing passengers for seats:', seatsCount);
-        
+        console.log("Initializing passengers for seats:", seatsCount);
+
         setPassengers(
           Array.from({ length: seatsCount }, (_, index) => ({
             id: index + 1,
@@ -142,9 +149,9 @@ const PassengerDetails = () => {
           }))
         );
       } else {
-        console.log('No flight data found in any source');
+        console.log("No flight data found in any source");
       }
-      
+
       setDataLoading(false);
     };
 
@@ -154,25 +161,28 @@ const PassengerDetails = () => {
   // Enhanced user data retrieval function
   const getUserData = () => {
     // Debug all localStorage keys
-    console.log('All localStorage keys:', Object.keys(localStorage));
-    console.log('Auth token:', localStorage.getItem('token') || localStorage.getItem('authToken'));
-    
+    console.log("All localStorage keys:", Object.keys(localStorage));
+    console.log(
+      "Auth token:",
+      localStorage.getItem("token") || localStorage.getItem("authToken")
+    );
+
     // Try different possible keys for user data
-    const possibleUserKeys = ['user', 'userData', 'currentUser', 'authUser'];
-    
+    const possibleUserKeys = ["user", "userData", "currentUser", "authUser"];
+
     for (const key of possibleUserKeys) {
       const userData = localStorage.getItem(key);
       console.log(`Checking ${key}:`, userData);
-      
+
       if (userData) {
         try {
           const parsed = JSON.parse(userData);
           console.log(`Parsed ${key}:`, parsed);
-          
+
           if (parsed && (parsed.id || parsed._id || parsed.userId)) {
             return {
               ...parsed,
-              id: parsed.id || parsed._id || parsed.userId
+              id: parsed.id || parsed._id || parsed.userId,
             };
           }
         } catch (e) {
@@ -182,19 +192,25 @@ const PassengerDetails = () => {
     }
 
     // If no user data found in localStorage, try to decode from JWT token
-    const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+    const token =
+      localStorage.getItem("token") || localStorage.getItem("authToken");
     if (token) {
       try {
         // Decode JWT token to get user info
-        const base64Url = token.split('.')[1];
-        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-        }).join(''));
-        
+        const base64Url = token.split(".")[1];
+        const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+        const jsonPayload = decodeURIComponent(
+          atob(base64)
+            .split("")
+            .map(function (c) {
+              return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+            })
+            .join("")
+        );
+
         const decoded = JSON.parse(jsonPayload);
-        console.log('Decoded JWT:', decoded);
-        
+        console.log("Decoded JWT:", decoded);
+
         if (decoded.userId) {
           return {
             id: decoded.userId,
@@ -203,11 +219,11 @@ const PassengerDetails = () => {
             firstname: decoded.firstname,
             lastname: decoded.lastname,
             role: decoded.role,
-            phone: decoded.phone
+            phone: decoded.phone,
           };
         }
       } catch (e) {
-        console.error('Error decoding JWT:', e);
+        console.error("Error decoding JWT:", e);
       }
     }
 
@@ -216,7 +232,8 @@ const PassengerDetails = () => {
 
   // Get auth headers
   const getAuthHeaders = () => {
-    const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+    const token =
+      localStorage.getItem("token") || localStorage.getItem("authToken");
     if (!token) {
       throw new Error("Authentication token not found. Please log in.");
     }
@@ -232,25 +249,28 @@ const PassengerDetails = () => {
     const birthDate = new Date(dateOfBirth);
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
-    
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < birthDate.getDate())
+    ) {
       age--;
     }
-    
+
     return age;
   };
 
   // Create passenger via API - Updated to match your backend
   const createPassengerAPI = async (passengerData) => {
     try {
-      console.log('Creating passenger with data:', passengerData);
-      
+      console.log("Creating passenger with data:", passengerData);
+
       // Get user data
       const user = getUserData();
       if (!user) {
         throw new Error("User information not found. Please log in again.");
       }
-      
+
       const response = await axios.post(
         `${BackendUrl}/api/passengers`,
         {
@@ -260,7 +280,9 @@ const PassengerDetails = () => {
           phone: passengerData.phone,
           dateOfBirth: passengerData.dateOfBirth,
           age: calculateAge(passengerData.dateOfBirth),
-          passportNumber: `PP${Date.now()}${Math.random().toString(36).substr(2, 4)}`.toUpperCase(),
+          passportNumber: `PP${Date.now()}${Math.random()
+            .toString(36)
+            .substr(2, 4)}`.toUpperCase(),
           gender: passengerData.gender,
           userId: user.id || user._id,
         },
@@ -268,11 +290,14 @@ const PassengerDetails = () => {
           headers: getAuthHeaders(),
         }
       );
-      
-      console.log('Passenger created successfully:', response.data);
+
+      console.log("Passenger created successfully:", response.data);
       return response.data;
     } catch (error) {
-      console.error('Error creating passenger:', error.response?.data || error.message);
+      console.error(
+        "Error creating passenger:",
+        error.response?.data || error.message
+      );
       throw error;
     }
   };
@@ -285,20 +310,20 @@ const PassengerDetails = () => {
     try {
       // Get user data with enhanced error handling
       const user = getUserData();
-      console.log('User data retrieved:', user);
-      
+      console.log("User data retrieved:", user);
+
       if (!user) {
         // Try to fetch user data from API as a last resort
         try {
           const response = await axios.get(`${BackendUrl}/api/users`, {
             headers: getAuthHeaders(),
           });
-          console.log('User data from API:', response.data);
-          
+          console.log("User data from API:", response.data);
+
           // Store user data for future use
-          localStorage.setItem('user', JSON.stringify(response.data));
+          localStorage.setItem("user", JSON.stringify(response.data));
         } catch (apiError) {
-          console.error('Failed to fetch user from API:', apiError);
+          console.error("Failed to fetch user from API:", apiError);
           throw new Error("User information not found. Please log in again.");
         }
       }
@@ -306,9 +331,16 @@ const PassengerDetails = () => {
       // Validate all required fields
       for (let i = 0; i < passengers.length; i++) {
         const passenger = passengers[i];
-        if (!passenger.firstName || !passenger.lastName || !passenger.email || 
-            !passenger.phone || !passenger.dateOfBirth) {
-          throw new Error(`Please fill in all required fields for Passenger ${i + 1}`);
+        if (
+          !passenger.firstName ||
+          !passenger.lastName ||
+          !passenger.email ||
+          !passenger.phone ||
+          !passenger.dateOfBirth
+        ) {
+          throw new Error(
+            `Please fill in all required fields for Passenger ${i + 1}`
+          );
         }
 
         // Validate email format
@@ -338,7 +370,7 @@ const PassengerDetails = () => {
             name: `${passenger.firstName} ${passenger.lastName}`,
           });
         } catch (apiError) {
-          console.error('Failed to create passenger via API:', apiError);
+          console.error("Failed to create passenger via API:", apiError);
           // Continue with local passenger data if API fails
           createdPassengers.push({
             ...passenger,
@@ -352,13 +384,13 @@ const PassengerDetails = () => {
       }
 
       // Store passenger data for persistence
-      sessionStorage.setItem('passengers', JSON.stringify(createdPassengers));
-      
+      sessionStorage.setItem("passengers", JSON.stringify(createdPassengers));
+
       // Prepare booking data for payment page
       const bookingData = {
         flightId: flight._id,
         seatsBooked: passengers.length,
-        passengers: createdPassengers.map(p => ({
+        passengers: createdPassengers.map((p) => ({
           name: p.name,
           age: p.age,
           passportNumber: p.passportNumber,
@@ -369,21 +401,22 @@ const PassengerDetails = () => {
         customerAddress: "To be provided",
       };
 
-      sessionStorage.setItem('bookingData', JSON.stringify(bookingData));
+      sessionStorage.setItem("bookingData", JSON.stringify(bookingData));
 
       // Navigate to payment page with all data
-      navigate("/payment", { 
-        state: { 
-          flight, 
-          searchData, 
+      navigate("/payment", {
+        state: {
+          flight,
+          searchData,
           passengers: createdPassengers,
-          bookingData
-        } 
+          bookingData,
+        },
       });
-
     } catch (error) {
-      console.error('Submit error:', error);
-      setError(error.response?.data?.error || error.message || "An error occurred");
+      console.error("Submit error:", error);
+      setError(
+        error.response?.data?.error || error.message || "An error occurred"
+      );
       setLoading(false);
     }
   };
@@ -410,7 +443,9 @@ const PassengerDetails = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-900">
         <div className="glassmorphism-card rounded-2xl p-8 max-w-md text-center">
-          <h2 className="text-2xl font-bold text-red-400 mb-4">Missing Flight Data</h2>
+          <h2 className="text-2xl font-bold text-red-400 mb-4">
+            Missing Flight Data
+          </h2>
           <p className="text-gray-400 mb-6">
             We couldn't find your flight information. This might happen if you:
           </p>
@@ -420,7 +455,9 @@ const PassengerDetails = () => {
             <li>• Your session expired</li>
             <li>• Flight wasn't selected properly</li>
           </ul>
-          <p className="text-gray-400 mb-6">Please start your booking from the flight search.</p>
+          <p className="text-gray-400 mb-6">
+            Please start your booking from the flight search.
+          </p>
           <div className="space-y-3">
             <motion.button
               whileHover={{ scale: 1.05 }}
@@ -428,10 +465,10 @@ const PassengerDetails = () => {
               onClick={() => {
                 // Clear any stored data and go to flights page
                 sessionStorage.clear();
-                localStorage.removeItem('selectedFlight');
-                localStorage.removeItem('searchData');
-                localStorage.removeItem('passengers');
-                navigate('/flights');
+                localStorage.removeItem("selectedFlight");
+                localStorage.removeItem("searchData");
+                localStorage.removeItem("passengers");
+                navigate("/flights");
               }}
               className="w-full px-6 py-3 gold-gradient text-slate-900 font-semibold rounded-xl hover:shadow-lg transition-shadow"
             >
@@ -440,7 +477,7 @@ const PassengerDetails = () => {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => navigate('/home')}
+              onClick={() => navigate("/home")}
               className="w-full px-6 py-3 bg-slate-700 text-white font-semibold rounded-xl hover:bg-slate-600 transition-colors"
             >
               Go to Home
@@ -495,13 +532,14 @@ const PassengerDetails = () => {
           <div className="flex justify-between items-center">
             <div>
               <p className="font-medium">
-                {flight?.airline || 'Airlines'} {flight?.flightNumber}
+                {flight?.airline || "Airlines"} {flight?.flightNumber}
               </p>
               <p className="text-gray-400">
                 {flight?.departure} → {flight?.arrival}
               </p>
               <p className="text-sm text-gray-500 mt-1">
-                {new Date(flight?.date).toLocaleDateString()} • {seatsCount} passenger(s)
+                {new Date(flight?.date).toLocaleDateString()} • {seatsCount}{" "}
+                passenger(s)
               </p>
             </div>
             <div className="text-right">
@@ -613,7 +651,7 @@ const PassengerDetails = () => {
                       onChange={(e) =>
                         updatePassenger(index, "dateOfBirth", e.target.value)
                       }
-                      max={new Date().toISOString().split('T')[0]}
+                      max={new Date().toISOString().split("T")[0]}
                       className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-yellow-400"
                     />
                   </div>
@@ -641,7 +679,8 @@ const PassengerDetails = () => {
                 {passenger.dateOfBirth && (
                   <div className="mt-4 p-3 bg-slate-800 rounded-lg">
                     <p className="text-sm text-gray-400">
-                      Age: <span className="text-white font-medium">
+                      Age:{" "}
+                      <span className="text-white font-medium">
                         {calculateAge(passenger.dateOfBirth)} years old
                       </span>
                     </p>
@@ -661,10 +700,10 @@ const PassengerDetails = () => {
               whileHover={{ scale: loading ? 1 : 1.05 }}
               whileTap={{ scale: loading ? 1 : 0.95 }}
               className={`w-full py-4 gold-gradient text-slate-900 font-semibold rounded-xl hover:shadow-lg transition-shadow text-lg ${
-                loading ? 'opacity-50 cursor-not-allowed' : ''
+                loading ? "opacity-50 cursor-not-allowed" : ""
               }`}
             >
-              {loading ? 'Creating Passengers...' : 'Continue to Payment'}
+              {loading ? "Creating Passengers..." : "Continue to Payment"}
             </motion.button>
           </form>
         </motion.div>
