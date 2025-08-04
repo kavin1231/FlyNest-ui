@@ -42,22 +42,7 @@ const Footer = () => {
         </div>
       )}
 
-      {/* Demo Login Toggle - Remove this in production */}
-      <div className="fixed top-4 left-4 z-50">
-        <button
-          onClick={toggleLogin}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            isLoggedIn 
-              ? 'bg-red-600 hover:bg-red-700 text-white' 
-              : 'bg-green-600 hover:bg-green-700 text-white'
-          }`}
-        >
-          {isLoggedIn ? 'Logout' : 'Login'}
-        </button>
-        <div className="mt-1 text-xs text-gray-600">
-          Status: {isLoggedIn ? 'Logged In' : 'Not Logged In'}
-        </div>
-      </div>
+
 
       <footer className="bg-slate-800 border-t border-slate-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
