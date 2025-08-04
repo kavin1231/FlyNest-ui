@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import toast from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import AOS from "aos";
 import "aos/dist/aos.css";
@@ -12,6 +12,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
   const [rememberTouched, setRememberTouched] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -21,12 +22,21 @@ export default function LoginPage() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
+    if (!email || !password) {
+      toast.error("Please enter both email and password");
+      return;
+    }
+
     if (!rememberTouched) {
       toast.error("Please confirm your 'Remember Me' preference.");
       return;
     }
 
+    setIsLoading(true);
     const BackendUrl = import.meta.env.VITE_BACKEND_URL;
+
+    // Show loading toast
+    const loadingToast = toast.loading("Signing you in...");
 
     axios
       .post(`${BackendUrl}/api/users/login`, {
@@ -35,7 +45,9 @@ export default function LoginPage() {
         rememberMe: remember,
       })
       .then((res) => {
-        toast.success("Login successful!");
+        toast.dismiss(loadingToast);
+        toast.success("Welcome back! Login successful!");
+        
         const user = res.data.user;
 
         // ✅ Store both token and user
@@ -49,8 +61,15 @@ export default function LoginPage() {
           navigate("/home");
         }
       })
-      .catch(() => {
-        toast.error("Login failed. Please check your credentials.");
+      .catch((err) => {
+        toast.dismiss(loadingToast);
+        const errorMessage = err?.response?.data?.message || 
+                           err?.response?.data?.error || 
+                           "Login failed. Please check your credentials.";
+        toast.error(errorMessage);
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
   };
 
@@ -62,6 +81,46 @@ export default function LoginPage() {
       }}
     >
       <Header />
+      
+      {/* Toast Container */}
+      <Toaster
+        position="top-center"
+        reverseOrder={false}
+        gutter={8}
+        containerClassName=""
+        containerStyle={{}}
+        toastOptions={{
+          // Default options for all toasts
+          className: '',
+          duration: 4000,
+          style: {
+            background: '#363636',
+            color: '#fff',
+            padding: '16px',
+            borderRadius: '8px',
+            fontSize: '14px',
+          },
+          // Default options for specific types
+          success: {
+            duration: 3000,
+            theme: {
+              primary: 'green',
+              secondary: 'black',
+            },
+          },
+          error: {
+            duration: 4000,
+            theme: {
+              primary: 'red',
+              secondary: 'black',
+            },
+          },
+          loading: {
+            duration: Infinity,
+          },
+        }}
+      />
+      
       <motion.img
         src="/planehero.png"
         alt="Airplane"
@@ -189,11 +248,12 @@ export default function LoginPage() {
         {/* Submit Button */}
         <button
           type="submit"
-          className="mt-8 w-full h-11 rounded-full text-black font-medium bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-yellow-400/30 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-50"
+          disabled={isLoading}
+          className="mt-8 w-full h-11 rounded-full text-black font-medium bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-yellow-400/30 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
           data-aos="fade-up"
           data-aos-delay="700"
         >
-          Login
+          {isLoading ? "Signing in..." : "Login"}
         </button>
 
         {/* Signup Link */}

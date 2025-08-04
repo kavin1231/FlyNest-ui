@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import toast from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 import { useNavigate, Link } from "react-router-dom";
 import AOS from "aos";
 import "aos/dist/aos.css";
@@ -39,6 +39,10 @@ export default function RegisterPage() {
     }
 
     setIsLoading(true);
+    
+    // Show loading toast
+    const loadingToast = toast.loading("Creating your account...");
+    
     axios
       .post(`${BackendUrl}/api/users/`, {
         firstname,
@@ -47,11 +51,13 @@ export default function RegisterPage() {
         password,
       })
       .then(() => {
-        toast.success("Registration Successful");
+        toast.dismiss(loadingToast);
+        toast.success("Registration successful! Welcome aboard!");
         navigate("/");
       })
       .catch((err) => {
-        toast.error(err?.response?.data?.error || "An error occurred");
+        toast.dismiss(loadingToast);
+        toast.error(err?.response?.data?.error || "Registration failed. Please try again.");
       })
       .finally(() => {
         setIsLoading(false);
@@ -64,6 +70,46 @@ export default function RegisterPage() {
       style={{ backgroundImage: `url('/bglg.jpg')` }}
     >
       <Header />
+      
+      {/* Toast Container */}
+      <Toaster
+        position="top-center"
+        reverseOrder={false}
+        gutter={8}
+        containerClassName=""
+        containerStyle={{}}
+        toastOptions={{
+          // Default options for all toasts
+          className: '',
+          duration: 4000,
+          style: {
+            background: '#363636',
+            color: '#fff',
+            padding: '16px',
+            borderRadius: '8px',
+            fontSize: '14px',
+          },
+          // Default options for specific types
+          success: {
+            duration: 3000,
+            theme: {
+              primary: 'green',
+              secondary: 'black',
+            },
+          },
+          error: {
+            duration: 4000,
+            theme: {
+              primary: 'red',
+              secondary: 'black',
+            },
+          },
+          loading: {
+            duration: Infinity,
+          },
+        }}
+      />
+      
       <motion.img
         src="/planehero.png"
         alt="Airplane"
@@ -151,7 +197,7 @@ export default function RegisterPage() {
         <button
           type="submit"
           disabled={isLoading}
-          className="mt-8 w-full h-11 rounded-full text-black font-medium bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-yellow-400/30 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-50"
+          className="mt-8 w-full h-11 rounded-full text-black font-medium bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-yellow-400/30 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
           data-aos="fade-up"
           data-aos-delay="600"
         >
