@@ -1,8 +1,23 @@
 import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Plane, Mail, Phone, MapPin } from 'lucide-react';
 
 const Footer = () => {
+  const navigate = useNavigate();
+
+  const handleNavigation = (path) => {
+    // Check if user is logged in (adjust this logic based on your auth system)
+    const isLoggedIn = localStorage.getItem('user') || sessionStorage.getItem('user');
+    
+    if (!isLoggedIn && (path === '/bookings' || path === '/flights')) {
+      // Redirect to login page for protected routes
+      navigate('/login', { state: { from: path } });
+    } else {
+      navigate(path);
+    }
+  };
+
   return (
     <footer className="bg-slate-800 border-t border-slate-700">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -23,18 +38,30 @@ const Footer = () => {
           <div className="text-center">
             <h4 className="text-white font-semibold mb-3">Quick Links</h4>
             <div className="space-y-2">
-              <a href="/flights" className="block text-gray-400 hover:text-white transition-colors text-sm">
+              <button
+                onClick={() => handleNavigation('/flights')}
+                className="block text-gray-400 hover:text-white transition-colors text-sm cursor-pointer w-full text-center"
+              >
                 Flights
-              </a>
-              <a href="/bookings" className="block text-gray-400 hover:text-white transition-colors text-sm">
+              </button>
+              <button
+                onClick={() => handleNavigation('/bookings')}
+                className="block text-gray-400 hover:text-white transition-colors text-sm cursor-pointer w-full text-center"
+              >
                 My Bookings
-              </a>
-              <a href="/about" className="block text-gray-400 hover:text-white transition-colors text-sm">
+              </button>
+              <Link
+                to="/about"
+                className="block text-gray-400 hover:text-white transition-colors text-sm"
+              >
                 About Us
-              </a>
-              <a href="/contactus" className="block text-gray-400 hover:text-white transition-colors text-sm">
+              </Link>
+              <Link
+                to="/contactus"
+                className="block text-gray-400 hover:text-white transition-colors text-sm"
+              >
                 Contact Us
-              </a>
+              </Link>
             </div>
           </div>
 
