@@ -1,8 +1,11 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Plane } from 'lucide-react';
+import React from "react";
+import { motion } from "framer-motion";
+import { Plane } from "lucide-react";
 
-const LoadingSpinner = ({ message = 'Loading...' }) => {
+export default LoadingSpinner;
+
+
+const LoadingSpinner = ({ message = "Loading..." }) => {
   return (
     <div className="fixed inset-0 bg-slate-900 flex items-center justify-center z-50">
       <div className="text-center">
@@ -35,8 +38,8 @@ const LoadingSpinner = ({ message = 'Loading...' }) => {
         {/* Progress Bar */}
         <div className="w-64 h-2 bg-slate-700 rounded-full overflow-hidden">
           <motion.div
-            initial={{ x: '-100%' }}
-            animate={{ x: '100%' }}
+            initial={{ x: "-100%" }}
+            animate={{ x: "100%" }}
             transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
             className="h-full w-1/3 gold-gradient"
           />
@@ -45,5 +48,3 @@ const LoadingSpinner = ({ message = 'Loading...' }) => {
     </div>
   );
 };
-
-export default LoadingSpinner;
