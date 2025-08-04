@@ -14,10 +14,10 @@ const FlightSearchUI = () => {
     passengers: 1,
     class: "Economy",
   });
-
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [hasSearched, setHasSearched] = useState(false);
 
   const airports = [
     { code: "SRILANKA", name: "Bandaranaike International", city: "Sri Lanka" },
@@ -26,18 +26,12 @@ const FlightSearchUI = () => {
     { code: "LONDON", name: "Heathrow", city: "London" },
     { code: "JAPAN", name: "Narita", city: "Japan" },
     { code: "FRANCE", name: "Charles de Gaulle", city: "France" },
-    {
-      code: "LOS ANGELES",
-      name: "Los Angeles International",
-      city: "Los Angeles",
-    },
+    { code: "LOS ANGELES", name: "Los Angeles International", city: "Los Angeles" },
     { code: "NEW YORK", name: "John F. Kennedy", city: "New York" },
     { code: "QATAR", name: "Hamad International", city: "Qatar" },
   ];
 
-  // Modified function to handle booking navigation
   const handleBookNow = (flight) => {
-    // Navigate to flight results page with the selected flight and search data
     navigate("/flights", {
       state: {
         selectedFlight: flight,
@@ -52,16 +46,19 @@ const FlightSearchUI = () => {
 
     if (!formData.from || !formData.to || !formData.departure) {
       setError("Please fill in all required fields");
+      setHasSearched(true);
       return;
     }
 
     if (formData.from === formData.to) {
       setError("Departure and arrival destinations cannot be the same");
+      setHasSearched(true);
       return;
     }
 
     setLoading(true);
     setError("");
+    setHasSearched(true);
 
     try {
       const params = new URLSearchParams({
@@ -74,9 +71,7 @@ const FlightSearchUI = () => {
 
       const response = await fetch(`${BackendUrl}/api/flights?${params}`, {
         method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
       });
 
       if (!response.ok) {
@@ -86,17 +81,15 @@ const FlightSearchUI = () => {
       const flights = await response.json();
       console.log("Search Results:", flights);
 
-      setSearchResults(flights);
+      setSearchResults(flights || []);
 
-      if (flights.length === 0) {
+      if (!flights || flights.length === 0) {
         setError(
           "No flights found for your search criteria. Please try different dates or destinations."
         );
       }
     } catch (err) {
       console.error("Flight search error:", err);
-
-      // Better error handling
       if (err.name === "TypeError" && err.message.includes("fetch")) {
         setError(
           "Unable to connect to the server. Please check your internet connection."
@@ -109,7 +102,6 @@ const FlightSearchUI = () => {
     }
   };
 
-  // Helper function to format date for display
   const formatDate = (dateString) => {
     try {
       const date = new Date(dateString);
@@ -123,7 +115,6 @@ const FlightSearchUI = () => {
     }
   };
 
-  // Helper function to format time
   const formatTime = (timeString) => {
     try {
       const date = new Date(timeString);
@@ -161,16 +152,19 @@ const FlightSearchUI = () => {
         }
       `}</style>
 
-      {/* Your Original Search Form */}
       <section className="relative -mt-32 z-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
           <div className="glassmorphism-card rounded-3xl p-8 shadow-2xl transform transition-all duration-800">
-            {/* Class Selection */}
             <div className="flex justify-center mb-8">
               <div className="flex bg-slate-700 rounded-full p-1">
-                {["Economy", "Business Class", "First Class"].map((cls) => (
+                {[
+                  "Economy",
+                  "Business Class",
+                  "First Class",
+                ].map((cls) => (
                   <button
                     key={cls}
+                    type="button"
                     onClick={() => setFormData({ ...formData, class: cls })}
                     className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${
                       formData.class === cls
@@ -184,13 +178,11 @@ const FlightSearchUI = () => {
               </div>
             </div>
 
-            <div>
+            <form onSubmit={handleSubmit} noValidate>
               <div className="grid grid-cols-1 md:grid-cols-5 gap-6 items-end">
-                {/* From */}
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-gray-300">
-                    <MapPin className="inline h-4 w-4 mr-1" />
-                    From
+                    <MapPin className="inline h-4 w-4 mr-1" /> From
                   </label>
                   <select
                     value={formData.from}
@@ -209,11 +201,9 @@ const FlightSearchUI = () => {
                   </select>
                 </div>
 
-                {/* To */}
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-gray-300">
-                    <MapPin className="inline h-4 w-4 mr-1" />
-                    To
+                    <MapPin className="inline h-4 w-4 mr-1" /> To
                   </label>
                   <select
                     value={formData.to}
@@ -232,11 +222,9 @@ const FlightSearchUI = () => {
                   </select>
                 </div>
 
-                {/* Departure Date */}
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-gray-300">
-                    <Calendar className="inline h-4 w-4 mr-1" />
-                    Departure
+                    <Calendar className="inline h-4 w-4 mr-1" /> Departure
                   </label>
                   <input
                     type="date"
@@ -244,17 +232,15 @@ const FlightSearchUI = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, departure: e.target.value })
                     }
-                    min={new Date().toISOString().split("T")[0]} // Prevent past dates
+                    min={new Date().toISOString().split("T")[0]}
                     className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-yellow-400"
                     required
                   />
                 </div>
 
-                {/* Return Date */}
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-gray-300">
-                    <Calendar className="inline h-4 w-4 mr-1" />
-                    Return
+                    <Calendar className="inline h-4 w-4 mr-1" /> Return
                   </label>
                   <input
                     type="date"
@@ -263,16 +249,14 @@ const FlightSearchUI = () => {
                       setFormData({ ...formData, return: e.target.value })
                     }
                     min={
-                      formData.departure ||
-                      new Date().toISOString().split("T")[0]
-                    } // Must be after departure
+                      formData.departure || new Date().toISOString().split("T")[0]
+                    }
                     className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-yellow-400"
                   />
                 </div>
 
-                {/* Search Button */}
                 <button
-                  onClick={handleSubmit}
+                  type="submit"
                   disabled={loading}
                   className={`px-8 py-3 gold-gradient text-slate-900 font-semibold rounded-xl hover:shadow-lg transition-shadow flex items-center justify-center pulse-gold transform hover:scale-105 active:scale-95 ${
                     loading ? "opacity-50 cursor-not-allowed" : ""
@@ -283,98 +267,109 @@ const FlightSearchUI = () => {
                 </button>
               </div>
 
-              {/* Passengers */}
-              <div className="mt-6 flex items-center space-x-4">
-                <label className="text-sm font-medium text-gray-300">
-                  <Users className="inline h-4 w-4 mr-1" />
-                  Passengers:
-                </label>
-                <select
-                  value={formData.passengers}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      passengers: parseInt(e.target.value),
-                    })
-                  }
-                  className="px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                >
-                  {[1, 2, 3, 4, 5, 6].map((num) => (
-                    <option key={num} value={num}>
-                      {num} {num === 1 ? "Passenger" : "Passengers"}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Error Message */}
-              {error && (
-                <div className="mt-4 p-4 bg-red-500/20 border border-red-500/50 rounded-xl text-red-200">
-                  {error}
+              <div className="mt-6 flex flex-wrap items-center gap-4">
+                <div className="flex items-center space-x-4">
+                  <label className="text-sm font-medium text-gray-300 flex items-center">
+                    <Users className="inline h-4 w-4 mr-1" /> Passengers:
+                  </label>
+                  <select
+                    value={formData.passengers}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        passengers: parseInt(e.target.value, 10),
+                      })
+                    }
+                    className="px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                  >
+                    {[1, 2, 3, 4, 5, 6].map((num) => (
+                      <option key={num} value={num}>
+                        {num} {num === 1 ? "Passenger" : "Passengers"}
+                      </option>
+                    ))}
+                  </select>
                 </div>
-              )}
-            </div>
+
+                {error && (
+                  <div className="mt-4 p-4 bg-red-500/20 border border-red-500/50 rounded-xl text-red-200 flex-1">
+                    {error}
+                  </div>
+                )}
+              </div>
+            </form>
           </div>
         </div>
       </section>
 
       {/* Search Results */}
-      {/* Search Results - Only show with proper spacing when results exist */}
-      {hasSearched && searchResults.length > 0 && (
+      {hasSearched && (
         <section className="pb-16 px-4 sm:px-6 lg:px-8">
           <div className="max-w-6xl mx-auto">
-            <h2 className="text-3xl font-bold text-center text-white mb-12">
+            <h2 className="text-3xl font-bold text-center text-white mb-6">
               Available Flights ({searchResults.length})
             </h2>
-            <div className="space-y-6">
-              {searchResults.map((flight) => (
-                <div
-                  key={flight._id}
-                  className="glassmorphism-card rounded-2xl p-6 hover:bg-slate-800/60 transition-all duration-300"
-                >
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-center">
-                    <div>
-                      <h3 className="text-xl font-semibold text-white mb-2">
-                        {flight.airline || "Airline"}
-                      </h3>
-                      <p className="text-gray-300">{flight.flightNumber}</p>
-                      <p className="text-sm text-gray-400 mt-1">
-                        {formatDate(flight.date)}
-                      </p>
-                    </div>
 
-                    <div className="text-center">
-                      <p className="text-2xl font-bold text-white">
-                        {formatTime(flight.departureTime)}
-                      </p>
-                      <p className="text-gray-300">{flight.departure}</p>
-                    </div>
+            {hasSearched && searchResults.length === 0 && (
+              <div className="text-center text-gray-300 mb-12">
+                <p className="text-lg">
+                  {loading
+                    ? "Searching for flights..."
+                    : "No flights matched your criteria. Try adjusting dates, class, or destinations."}
+                </p>
+              </div>
+            )}
 
-                    <div className="text-center">
-                      <p className="text-2xl font-bold text-white">
-                        {formatTime(flight.arrivalTime)}
-                      </p>
-                      <p className="text-gray-300">{flight.arrival}</p>
-                    </div>
+            {searchResults.length > 0 && (
+              <div className="space-y-6">
+                {searchResults.map((flight) => (
+                  <div
+                    key={flight._id}
+                    className="glassmorphism-card rounded-2xl p-6 hover:bg-slate-800/60 transition-all duration-300"
+                  >
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-center">
+                      <div>
+                        <h3 className="text-xl font-semibold text-white mb-2">
+                          {flight.airline || "Airline"}
+                        </h3>
+                        <p className="text-gray-300">{flight.flightNumber}</p>
+                        <p className="text-sm text-gray-400 mt-1">
+                          {formatDate(flight.date)}
+                        </p>
+                      </div>
 
-                    <div className="text-center">
-                      <p className="text-3xl font-bold text-yellow-400">
-                        ${flight.price}
-                      </p>
-                      <p className="text-gray-300 mb-4">
-                        {flight.availableSeats} seats left
-                      </p>
-                      <button
-                        onClick={() => handleBookNow(flight)}
-                        className="px-6 py-2 gold-gradient text-slate-900 font-semibold rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105"
-                      >
-                        Book Now
-                      </button>
+                      <div className="text-center">
+                        <p className="text-2xl font-bold text-white">
+                          {formatTime(flight.departureTime)}
+                        </p>
+                        <p className="text-gray-300">{flight.departure}</p>
+                      </div>
+
+                      <div className="text-center">
+                        <p className="text-2xl font-bold text-white">
+                          {formatTime(flight.arrivalTime)}
+                        </p>
+                        <p className="text-gray-300">{flight.arrival}</p>
+                      </div>
+
+                      <div className="text-center">
+                        <p className="text-3xl font-bold text-yellow-400">
+                          ${flight.price}
+                        </p>
+                        <p className="text-gray-300 mb-4">
+                          {flight.availableSeats} seats left
+                        </p>
+                        <button
+                          onClick={() => handleBookNow(flight)}
+                          className="px-6 py-2 gold-gradient text-slate-900 font-semibold rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+                        >
+                          Book Now
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </section>
       )}
