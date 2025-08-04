@@ -129,7 +129,7 @@ const FlightSearchUI = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900">
+    <div className="w-full">
       <style>{`
         .glassmorphism-card {
           background: rgba(15, 23, 42, 0.8);
@@ -152,7 +152,8 @@ const FlightSearchUI = () => {
         }
       `}</style>
 
-      <section className="relative -mt-32 z-20 px-4 sm:px-6 lg:px-8">
+      {/* Search Form - Fixed position over hero */}
+      <section className="relative z-20 px-4 sm:px-6 lg:px-8 -mt-32">
         <div className="max-w-6xl mx-auto">
           <div className="glassmorphism-card rounded-3xl p-8 shadow-2xl transform transition-all duration-800">
             <div className="flex justify-center mb-8">
@@ -301,21 +302,21 @@ const FlightSearchUI = () => {
         </div>
       </section>
 
-      {/* Search Results */}
+      {/* Search Results - Only shows when there are results or after search */}
       {hasSearched && (
-        <section className="pb-16 px-4 sm:px-6 lg:px-8">
+        <section className="pt-16 pb-16 px-4 sm:px-6 lg:px-8 bg-slate-900">
           <div className="max-w-6xl mx-auto">
-            <h2 className="text-3xl font-bold text-center text-white mb-6">
-              Available Flights ({searchResults.length})
+            <h2 className="text-3xl font-bold text-center text-white mb-8">
+              {loading ? "Searching flights..." : `Available Flights (${searchResults.length})`}
             </h2>
 
-            {hasSearched && searchResults.length === 0 && (
+            {!loading && searchResults.length === 0 && error && (
               <div className="text-center text-gray-300 mb-12">
-                <p className="text-lg">
-                  {loading
-                    ? "Searching for flights..."
-                    : "No flights matched your criteria. Try adjusting dates, class, or destinations."}
-                </p>
+                <div className="glassmorphism-card rounded-2xl p-8 max-w-2xl mx-auto">
+                  <p className="text-lg text-red-200">
+                    No flights found for your search criteria. Try adjusting dates, class, or destinations.
+                  </p>
+                </div>
               </div>
             )}
 

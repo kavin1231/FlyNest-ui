@@ -23,10 +23,16 @@ const HomePage = () => {
       exit={{ opacity: 0 }}
       className="pt-20"
     >
-      <Header/>
-      <HeroPage />
-      <SearchForm onSearch={handleSearch} />
-      <TravelSupport />
+      <Header />
+      <div className="relative">
+        <HeroPage />
+        {/* Search form positioned over the hero section */}
+        <SearchForm onSearch={handleSearch} />
+      </div>
+      {/* Reduced spacing between sections */}
+      <div className="mt-8">
+        <TravelSupport />
+      </div>
       <FeatureCards />
       <BestTravelers />
     </motion.div>
