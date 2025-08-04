@@ -10,7 +10,7 @@ import {
   useElements,
 } from "@stripe/react-stripe-js";
 import axios from "axios";
-import LoadingSpinner from "./loadingSpinner.jsx";
+import LoadingSpinner from "../../components/loadingSpinner.jsx";
 import Header from "../../components/Header.jsx";
 
 // Initialize Stripe with your publishable key

@@ -2,9 +2,6 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Plane } from "lucide-react";
 
-export default LoadingSpinner;
-
-
 const LoadingSpinner = ({ message = "Loading..." }) => {
   return (
     <div className="fixed inset-0 bg-slate-900 flex items-center justify-center z-50">
@@ -48,3 +45,5 @@ const LoadingSpinner = ({ message = "Loading..." }) => {
     </div>
   );
 };
+
+export default LoadingSpinner; // ✅ Move this to the end!
