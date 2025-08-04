@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Plane,
@@ -16,6 +17,7 @@ import {
 import Header from "../../components/Header";
 
 const AboutUsPage = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("mission");
   const [counter, setCounter] = useState({
     flights: 0,
