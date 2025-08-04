@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { MapPin, Users, Calendar, Search } from "lucide-react";
+import toast, { Toaster } from "react-hot-toast";
 
 const FlightSearchUI = () => {
   const BackendUrl = import.meta.env.VITE_BACKEND_URL;
@@ -17,7 +18,7 @@ const FlightSearchUI = () => {
 
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [hasSearched, setHasSearched] = useState(false);
 
   const airports = [
     { code: "SRILANKA", name: "Bandaranaike International", city: "Sri Lanka" },
@@ -51,17 +52,20 @@ const FlightSearchUI = () => {
     e.preventDefault();
 
     if (!formData.from || !formData.to || !formData.departure) {
-      setError("Please fill in all required fields");
+      toast.error("Please fill in all required fields");
       return;
     }
 
     if (formData.from === formData.to) {
-      setError("Departure and arrival destinations cannot be the same");
+      toast.error("Departure and arrival destinations cannot be the same");
       return;
     }
 
     setLoading(true);
-    setError("");
+    setHasSearched(true);
+
+    // Show loading toast
+    const loadingToast = toast.loading("Searching for flights...");
 
     try {
       const params = new URLSearchParams({
@@ -86,23 +90,23 @@ const FlightSearchUI = () => {
       const flights = await response.json();
       console.log("Search Results:", flights);
 
+      toast.dismiss(loadingToast);
       setSearchResults(flights);
 
       if (flights.length === 0) {
-        setError(
-          "No flights found for your search criteria. Please try different dates or destinations."
-        );
+        toast.error("No flights found for your search criteria. Please try different dates or destinations.");
+      } else {
+        toast.success(`Found ${flights.length} flight${flights.length > 1 ? 's' : ''}!`);
       }
     } catch (err) {
       console.error("Flight search error:", err);
+      toast.dismiss(loadingToast);
 
       // Better error handling
       if (err.name === "TypeError" && err.message.includes("fetch")) {
-        setError(
-          "Unable to connect to the server. Please check your internet connection."
-        );
+        toast.error("Unable to connect to the server. Please check your internet connection.");
       } else {
-        setError(`Search failed: ${err.message}`);
+        toast.error(`Search failed: ${err.message}`);
       }
     } finally {
       setLoading(false);
@@ -138,7 +142,33 @@ const FlightSearchUI = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900">
+    <div className={`bg-slate-900 transition-all duration-500 ${hasSearched && searchResults.length > 0 ? 'min-h-screen' : 'min-h-fit'}`}>
+      {/* Toast Container */}
+      <Toaster
+        position="top-center"
+        reverseOrder={false}
+        gutter={8}
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: '#363636',
+            color: '#fff',
+            padding: '16px',
+            borderRadius: '8px',
+            fontSize: '14px',
+          },
+          success: {
+            duration: 3000,
+          },
+          error: {
+            duration: 4000,
+          },
+          loading: {
+            duration: Infinity,
+          },
+        }}
+      />
+
       <style>{`
         .glassmorphism-card {
           background: rgba(15, 23, 42, 0.8);
@@ -161,18 +191,18 @@ const FlightSearchUI = () => {
         }
       `}</style>
 
-      {/* Your Original Search Form */}
-      <section className="relative -mt-32 z-20 px-4 sm:px-6 lg:px-8">
+      {/* Compact Search Form */}
+      <section className={`relative z-20 px-4 sm:px-6 lg:px-8 transition-all duration-500 ${hasSearched ? 'py-8' : 'py-4'}`}>
         <div className="max-w-6xl mx-auto">
-          <div className="glassmorphism-card rounded-3xl p-8 shadow-2xl transform transition-all duration-800">
-            {/* Class Selection */}
-            <div className="flex justify-center mb-8">
+          <div className="glassmorphism-card rounded-3xl p-6 shadow-2xl transform transition-all duration-800">
+            {/* Class Selection - More Compact */}
+            <div className="flex justify-center mb-6">
               <div className="flex bg-slate-700 rounded-full p-1">
                 {["Economy", "Business Class", "First Class"].map((cls) => (
                   <button
                     key={cls}
                     onClick={() => setFormData({ ...formData, class: cls })}
-                    className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
                       formData.class === cls
                         ? "bg-blue-600 text-white"
                         : "text-gray-300 hover:text-white"
@@ -185,7 +215,7 @@ const FlightSearchUI = () => {
             </div>
 
             <div>
-              <div className="grid grid-cols-1 md:grid-cols-5 gap-6 items-end">
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
                 {/* From */}
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-gray-300">
@@ -197,7 +227,7 @@ const FlightSearchUI = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, from: e.target.value })
                     }
-                    className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                    className="w-full px-3 py-2.5 bg-slate-700 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-yellow-400"
                     required
                   >
                     <option value="">Select departure</option>
@@ -220,7 +250,7 @@ const FlightSearchUI = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, to: e.target.value })
                     }
-                    className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                    className="w-full px-3 py-2.5 bg-slate-700 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-yellow-400"
                     required
                   >
                     <option value="">Select destination</option>
@@ -244,8 +274,8 @@ const FlightSearchUI = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, departure: e.target.value })
                     }
-                    min={new Date().toISOString().split("T")[0]} // Prevent past dates
-                    className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                    min={new Date().toISOString().split("T")[0]}
+                    className="w-full px-3 py-2.5 bg-slate-700 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-yellow-400"
                     required
                   />
                 </div>
@@ -265,8 +295,8 @@ const FlightSearchUI = () => {
                     min={
                       formData.departure ||
                       new Date().toISOString().split("T")[0]
-                    } // Must be after departure
-                    className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                    }
+                    className="w-full px-3 py-2.5 bg-slate-700 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-yellow-400"
                   />
                 </div>
 
@@ -274,7 +304,7 @@ const FlightSearchUI = () => {
                 <button
                   onClick={handleSubmit}
                   disabled={loading}
-                  className={`px-8 py-3 gold-gradient text-slate-900 font-semibold rounded-xl hover:shadow-lg transition-shadow flex items-center justify-center pulse-gold transform hover:scale-105 active:scale-95 ${
+                  className={`px-6 py-2.5 gold-gradient text-slate-900 font-semibold rounded-xl hover:shadow-lg transition-all flex items-center justify-center pulse-gold transform hover:scale-105 active:scale-95 ${
                     loading ? "opacity-50 cursor-not-allowed" : ""
                   }`}
                 >
@@ -283,8 +313,8 @@ const FlightSearchUI = () => {
                 </button>
               </div>
 
-              {/* Passengers */}
-              <div className="mt-6 flex items-center space-x-4">
+              {/* Passengers - More Compact */}
+              <div className="mt-4 flex items-center space-x-4">
                 <label className="text-sm font-medium text-gray-300">
                   <Users className="inline h-4 w-4 mr-1" />
                   Passengers:
@@ -297,7 +327,7 @@ const FlightSearchUI = () => {
                       passengers: parseInt(e.target.value),
                     })
                   }
-                  className="px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                  className="px-3 py-1.5 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-400"
                 >
                   {[1, 2, 3, 4, 5, 6].map((num) => (
                     <option key={num} value={num}>
@@ -306,21 +336,14 @@ const FlightSearchUI = () => {
                   ))}
                 </select>
               </div>
-
-              {/* Error Message */}
-              {error && (
-                <div className="mt-4 p-4 bg-red-500/20 border border-red-500/50 rounded-xl text-red-200">
-                  {error}
-                </div>
-              )}
             </div>
           </div>
         </div>
       </section>
 
-      {/* Search Results */}
-      {searchResults.length > 0 && (
-        <section className="py-16 px-4 sm:px-6 lg:px-8">
+      {/* Search Results - Only show with proper spacing when results exist */}
+      {hasSearched && searchResults.length > 0 && (
+        <section className="pb-16 px-4 sm:px-6 lg:px-8">
           <div className="max-w-6xl mx-auto">
             <h2 className="text-3xl font-bold text-center text-white mb-12">
               Available Flights ({searchResults.length})
@@ -376,6 +399,18 @@ const FlightSearchUI = () => {
             </div>
           </div>
         </section>
+      )}
+
+      {/* No Results Message - Compact */}
+      {hasSearched && searchResults.length === 0 && !loading && (
+        <div className="px-4 sm:px-6 lg:px-8 pb-8">
+          <div className="max-w-6xl mx-auto text-center">
+            <div className="glassmorphism-card rounded-2xl p-8">
+              <h3 className="text-xl font-semibold text-white mb-2">No Flights Found</h3>
+              <p className="text-gray-300">Try adjusting your search criteria or dates.</p>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
