@@ -11,6 +11,10 @@ const Header2 = () => {
     navigate("/");
   };
 
+  const goToAdmin = () => {
+    navigate("/admin");
+  };
+
   return (
     <motion.header
       initial={{ y: -100 }}
@@ -21,7 +25,12 @@ const Header2 = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="flex justify-between items-center h-20">
           {/* Logo */}
-          <div className="flex items-center space-x-2">
+          <div
+            onClick={goToAdmin}
+            className="flex items-center space-x-2 cursor-pointer"
+            aria-label="Go to admin"
+            role="button"
+          >
             <motion.div
               whileHover={{ rotate: 360 }}
               transition={{ duration: 0.5 }}
@@ -29,7 +38,7 @@ const Header2 = () => {
             >
               <img
                 src="/flynestlogo.png"
-                alt="Logo"
+                alt="FlyNest Logo"
                 className="h-6 w-6 object-contain"
               />
             </motion.div>
