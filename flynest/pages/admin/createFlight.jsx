@@ -358,7 +358,7 @@ const AddFlightForm = () => {
             <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-slate-600">
               <button
                 type="button"
-                onClick={() => navigate("/admin-flights")}
+                onClick={() => navigate("/admin")}
                 className="flex-1 px-6 py-4 bg-slate-600 hover:bg-slate-500 text-white rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2"
               >
                 <X className="h-5 w-5" /> Cancel
