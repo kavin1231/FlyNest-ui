@@ -1,16 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Plane, Mail, Phone, MapPin, X } from 'lucide-react';
 
-const Footer = () => {
-  // Simulated auth state - replace with your actual auth context/state
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [toast, setToast] = useState({ show: false, message: '' });
+// Consistent token accessor using localStorage (matches your header system)
+const getToken = () => {
+  return localStorage.getItem("token");
+};
 
-  // Simulate login/logout for demo purposes
-  const toggleLogin = () => {
-    setIsLoggedIn(!isLoggedIn);
-    showToast(isLoggedIn ? 'Logged out successfully!' : 'Logged in successfully!');
-  };
+const Footer = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(() => !!getToken());
+  const [toast, setToast] = useState({ show: false, message: '' });
+  const location = useLocation();
+
+  // Update login state when route changes (matches header behavior)
+  useEffect(() => {
+    const token = getToken();
+    setIsLoggedIn(!!token);
+  }, [location]);
+
+  // Listen for storage changes (matches header behavior)
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === "token") {
+        const token = getToken();
+        setIsLoggedIn(!!token);
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
 
   const showToast = (message) => {
     setToast({ show: true, message });
