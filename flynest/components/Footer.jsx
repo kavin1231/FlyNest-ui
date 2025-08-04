@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import { Plane, Mail, Phone, MapPin, X } from 'lucide-react';
 
 // Consistent token accessor using localStorage (matches your header system)
@@ -38,13 +38,7 @@ const Footer = () => {
     }, 3000);
   };
 
-  const handleProtectedLink = (e, path) => {
-    if (!isLoggedIn && (path === '/flights' || path === '/bookings' || path === '/contactus')) {
-      e.preventDefault();
-      showToast('Please login first to access this feature');
-    }
-    // If logged in, navigation would proceed normally
-  };
+
 
   return (
     <>
@@ -82,45 +76,57 @@ const Footer = () => {
             <div className="text-center">
               <h4 className="text-white font-semibold mb-3">Quick Links</h4>
               <div className="space-y-2">
-                <a 
-                  href="/flights" 
-                  onClick={(e) => handleProtectedLink(e, '/flights')}
-                  className={`block transition-colors text-sm ${
-                    !isLoggedIn 
-                      ? 'text-gray-500 cursor-not-allowed hover:text-gray-500' 
-                      : 'text-gray-400 hover:text-white cursor-pointer'
-                  }`}
-                >
-                  Flights {!isLoggedIn && '🔒'}
-                </a>
-                <a 
-                  href="/bookings" 
-                  onClick={(e) => handleProtectedLink(e, '/bookings')}
-                  className={`block transition-colors text-sm ${
-                    !isLoggedIn 
-                      ? 'text-gray-500 cursor-not-allowed hover:text-gray-500' 
-                      : 'text-gray-400 hover:text-white cursor-pointer'
-                  }`}
-                >
-                  My Bookings {!isLoggedIn && '🔒'}
-                </a>
-                <a 
-                  href="/about" 
+                {isLoggedIn ? (
+                  <Link 
+                    to="/flights" 
+                    className="block text-gray-400 hover:text-white transition-colors text-sm cursor-pointer"
+                  >
+                    Flights
+                  </Link>
+                ) : (
+                  <span 
+                    onClick={() => showToast('Please login first to access this feature')}
+                    className="block text-gray-500 cursor-not-allowed hover:text-gray-500 transition-colors text-sm"
+                  >
+                    Flights 🔒
+                  </span>
+                )}
+                {isLoggedIn ? (
+                  <Link 
+                    to="/bookings" 
+                    className="block text-gray-400 hover:text-white transition-colors text-sm cursor-pointer"
+                  >
+                    My Bookings
+                  </Link>
+                ) : (
+                  <span 
+                    onClick={() => showToast('Please login first to access this feature')}
+                    className="block text-gray-500 cursor-not-allowed hover:text-gray-500 transition-colors text-sm"
+                  >
+                    My Bookings 🔒
+                  </span>
+                )}
+                <Link 
+                  to="/about" 
                   className="block text-gray-400 hover:text-white transition-colors text-sm cursor-pointer"
                 >
                   About Us
-                </a>
-                <a 
-                  href="/contactus" 
-                  onClick={(e) => handleProtectedLink(e, '/contactus')}
-                  className={`block transition-colors text-sm ${
-                    !isLoggedIn 
-                      ? 'text-gray-500 cursor-not-allowed hover:text-gray-500' 
-                      : 'text-gray-400 hover:text-white cursor-pointer'
-                  }`}
-                >
-                  Contact Us {!isLoggedIn && '🔒'}
-                </a>
+                </Link>
+                {isLoggedIn ? (
+                  <Link 
+                    to="/contactus" 
+                    className="block text-gray-400 hover:text-white transition-colors text-sm cursor-pointer"
+                  >
+                    Contact Us
+                  </Link>
+                ) : (
+                  <span 
+                    onClick={() => showToast('Please login first to access this feature')}
+                    className="block text-gray-500 cursor-not-allowed hover:text-gray-500 transition-colors text-sm"
+                  >
+                    Contact Us 🔒
+                  </span>
+                )}
               </div>
             </div>
 
