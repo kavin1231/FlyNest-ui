@@ -501,13 +501,13 @@ const AboutUsPage = () => {
             transition={{ delay: 0.4 }}
           >
             <button
-              onClick={() => navigate("/booking")}
+              onClick={() => navigate("/flights")}
               className="px-8 py-4 bg-gradient-to-r from-yellow-400 to-orange-500 text-slate-900 font-bold rounded-full hover:shadow-lg hover:shadow-yellow-400/25 transition-all duration-300 transform hover:scale-105"
             >
               Start Booking Now
             </button>
             <button
-              onClick={() => navigate("/contact")}
+              onClick={() => navigate("/contactus")}
               className="px-8 py-4 border border-white/20 text-white font-semibold rounded-full hover:bg-white/10 transition-all duration-300"
             >
               Contact Support
