@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Filter, Plane, Calendar, Clock, ArrowLeft } from "lucide-react";
 import axios from "axios";
 import FlightCard from "../components/flightCard.jsx";
-import LoadingSpinner from "../../components/LoadingSpinner.jsx";
+import LoadingSpinner from "../components/LoadingSpinner.jsx";
 import Header from "../components/Header.jsx";
 
 const FlightResults = () => {
